@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from uuid import uuid4
 
 
-class AbstractModel(ABC):
+class abstract_model(ABC):
     """Общий предок справочников и документов предметной области."""
 
     def __init__(self):

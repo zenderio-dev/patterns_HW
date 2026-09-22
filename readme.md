@@ -36,10 +36,13 @@ patterns_HW/
 │   ├── Entities.md
 │   └── CodeCases.md
 ├── Src/                  # исходные коды приложения
-│   └── Abstract.py       # абстрактный базовый класс доменных моделей
+│   └── Core/             # общие классы, константы и перечисления
+│       └── Abstract.py   # абстрактный базовый класс доменных моделей
 └── readme.md
 ```
 
+Структура соответствует соглашению [Docs/CodeCases.md](Docs/CodeCases.md): каталоги
+именуются в `CamelCase`, классы, свойства и методы — в `lowercase_separated_by_underscores`.
 По мере развития проекта в `Src` добавятся разделы `Models` (доменные модели),
 `Logics` (бизнес-логика) и `Dtos` (объекты передачи данных), а также каталог `Tst`
 с модульными, интеграционными и функциональными тестами.
@@ -47,7 +50,7 @@ patterns_HW/
 ## Базовый класс
 
 Все доменные модели наследуются от абстрактного класса
-[`AbstractModel`](Src/Abstract.py). Он задаёт для каждой записи:
+[`abstract_model`](Src/Core/Abstract.py). Он задаёт для каждой записи:
 
 - `code` — неизменяемый код, создаваемый вместе с объектом;
 - `title` — название с контролем пустого значения и обрезкой краевых пробелов;
@@ -56,10 +59,10 @@ patterns_HW/
 Пример наследника:
 
 ```python
-from Src.Abstract import AbstractModel
+from Src.Core.Abstract import abstract_model
 
 
-class Warehouse(AbstractModel):
+class warehouse(abstract_model):
     """Склад — место хранения номенклатуры."""
 
     def __init__(self, title: str) -> None:
