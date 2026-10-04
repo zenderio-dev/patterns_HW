@@ -8,9 +8,9 @@ class abstract_manager(ABC):
     _data:list = []
 
     """
-    Загрузить данные
+    Загрузить данные. Повторная загрузка берёт данные из кэша, force = True - загрузить заново
     """
-    def load(self, file_name:str = "")-> None:
+    def load(self, file_name:str = "", force:bool = False)-> None:
         pass
 
     """

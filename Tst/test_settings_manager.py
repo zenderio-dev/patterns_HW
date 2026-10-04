@@ -126,3 +126,38 @@ def test_raise_settings_manager_load_file_not_found():
     except operation_exception:
         assert True
 
+"""
+<summary>
+Кэширование: повторная загрузка того же файла не перечитывает его,
+а возвращает уже загруженный объект настроек
+</summary>
+"""
+def test_equals_settings_manager_load_cached():
+    # Подготовка
+    manager = settings_manager()
+    manager.load()
+    cached = manager.settings
+
+    # Действие
+    manager.load()
+
+    # Проверка
+    assert manager.settings is cached
+
+"""
+<summary>
+Кэширование: load(force=True) перечитывает файл и создаёт новый объект настроек
+</summary>
+"""
+def test_not_equals_settings_manager_load_force():
+    # Подготовка
+    manager = settings_manager()
+    manager.load()
+    cached = manager.settings
+
+    # Действие
+    manager.load(force=True)
+
+    # Проверка
+    assert manager.settings is not cached
+    assert manager.settings.company.name == cached.company.name

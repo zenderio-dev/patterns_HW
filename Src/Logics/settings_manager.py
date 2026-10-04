@@ -20,16 +20,21 @@ class settings_manager(abstract_manager):
         return cls.instance
 
     """
-    Загрузка данных
+    Загрузка данных. Уже загруженный файл берётся из кэша и повторно не читается.
+    force = True - перечитать файл принудительно
     """
-    def load (self, file_name = ""):
+    def load (self, file_name = "", force: bool = False):
         inner_file_name = file_name.strip() if file_name and file_name.strip() != "" else self.__deffault_file_name
         validator.validate(inner_file_name, str)
+
+        if self.__is_loaded and self._file_name == inner_file_name and not force:
+            return
 
         try:
             with open(inner_file_name, "r", encoding="utf-8") as file:
                 self.__data = json.load(file)
                 self.__is_loaded = self.convert()
+                self._file_name = inner_file_name
         except Exception as ex:
             raise operation_exception(f"Ошибка при загрузке и обработки файла: {inner_file_name}. Детали:{ex}")
 

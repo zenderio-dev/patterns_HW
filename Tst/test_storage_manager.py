@@ -156,3 +156,42 @@ def test_equals_storage_manager_load_models_hashable():
 
     # Проверка
     assert len(unique_ranges) == len(ranges)
+
+
+"""
+<summary>
+Кэширование: повторный вызов load() не пересоздаёт модели —
+хранилище отдаёт те же объекты с теми же уникальными кодами
+</summary>
+"""
+def test_equals_storage_manager_load_cached():
+    # Подготовка
+    manager = storage_manager()
+    flour = manager.data[storage_manager.nomenclature_key][0]
+
+    # Действие
+    manager.load()
+
+    # Проверка
+    assert manager.data[storage_manager.nomenclature_key][0] is flour
+
+
+"""
+<summary>
+Кэширование: load(force=True) формирует данные заново —
+модели создаются повторно и получают новые уникальные коды
+</summary>
+"""
+def test_not_equals_storage_manager_load_force():
+    # Подготовка
+    manager = storage_manager()
+    flour = manager.data[storage_manager.nomenclature_key][0]
+
+    # Действие
+    manager.load(force=True)
+
+    # Проверка
+    new_flour = manager.data[storage_manager.nomenclature_key][0]
+    assert new_flour is not flour
+    assert new_flour.unique_code != flour.unique_code
+    assert new_flour.name == flour.name

@@ -28,9 +28,13 @@ class storage_manager(abstract_manager):
 
     """
     Сформировать первичные данные справочников (ингредиенты рецепта Docs/Recipe.md)
-    и преобразовать их в модели
+    и преобразовать их в модели. Уже сформированные данные берутся из кэша.
+    force = True - сформировать данные заново
     """
-    def load(self, file_name: str = "") -> None:
+    def load(self, file_name: str = "", force: bool = False) -> None:
+        if self.__is_loaded and not force:
+            return
+
         self.__source = {
             self.range_key: [
                 # наименование, коэффициент, базовая единица
