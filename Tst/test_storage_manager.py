@@ -161,6 +161,45 @@ def test_equals_storage_manager_load_models_hashable():
 
 """
 <summary>
+Кэширование: повторный вызов load() не пересоздаёт модели —
+хранилище отдаёт те же объекты с теми же уникальными кодами
+</summary>
+"""
+def test_equals_storage_manager_load_cached():
+    # Подготовка
+    manager = storage_manager()
+    flour = manager.data[storage_manager.nomenclature_key][0]
+
+    # Действие
+    manager.load()
+
+    # Проверка
+    assert manager.data[storage_manager.nomenclature_key][0] is flour
+
+
+"""
+<summary>
+Кэширование: load(force=True) формирует данные заново —
+модели создаются повторно и получают новые уникальные коды
+</summary>
+"""
+def test_not_equals_storage_manager_load_force():
+    # Подготовка
+    manager = storage_manager()
+    flour = manager.data[storage_manager.nomenclature_key][0]
+
+    # Действие
+    manager.load(force=True)
+
+    # Проверка
+    new_flour = manager.data[storage_manager.nomenclature_key][0]
+    assert new_flour is not flour
+    assert new_flour.unique_code != flour.unique_code
+    assert new_flour.name == flour.name
+
+
+"""
+<summary>
 Не первый старт (settings.first_start = False): первичные данные не формируются,
 справочники в хранилище пустые
 </summary>
@@ -172,7 +211,7 @@ def test_empty_storage_manager_load_not_first_start():
     settings.first_start = False
 
     # Действие
-    manager.load()
+    manager.load(force=True)
 
     # Проверка
     assert not manager.is_loaded
@@ -180,4 +219,4 @@ def test_empty_storage_manager_load_not_first_start():
         assert len(items) == 0
 
     settings.first_start = True
-    manager.load()
+    manager.load(force=True)
