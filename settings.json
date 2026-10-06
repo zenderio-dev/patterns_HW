@@ -1,12 +1,10 @@
 {
-    "company": {
-        "name": "Ромашка",
-        "inn": 380100000000,
-        "bic": 44525225,
-        "corr_account": 30101810000,
-        "account": 40702810000,
-        "ownership": "ООО"
-    },
+    "company_name": "Ромашка",
+    "company_inn": 380100000000,
+    "company_bic": 44525225,
+    "company_corr_account": 30101810000,
+    "company_account": 40702810000,
+    "company_ownership": "ООО",
     "boss_name": "Иванов Иван Иванович",
     "account_name": "Петрова Анна Сергеевна",
     "first_start": true

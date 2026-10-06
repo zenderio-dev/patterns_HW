@@ -164,7 +164,7 @@ def test_not_equals_settings_manager_load_force():
 
 """
 <summary>
-В settings.json нет ключа company: загрузка не падает, организация остаётся
+В settings.json нет ключей организации (company_*): загрузка не падает, организация остаётся
 по умолчанию, остальные ключи загружаются
 </summary>
 """
@@ -192,7 +192,7 @@ def test_not_raise_settings_manager_load_without_company(tmp_path):
 def test_default_settings_manager_load_invalid_data(tmp_path):
     # Подготовка
     file_name = tmp_path / "settings.json"
-    file_name.write_text('{"company": {"inn": "не число"}, "boss_name": "Иванов"}', encoding="utf-8")
+    file_name.write_text('{"company_inn": "не число", "boss_name": "Иванов"}', encoding="utf-8")
     manager = settings_manager()
 
     # Действие

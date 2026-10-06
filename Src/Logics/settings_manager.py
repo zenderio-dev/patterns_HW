@@ -42,6 +42,7 @@ class settings_manager(abstract_manager):
 
     """
     Преобразование загруженного JSON в модель настроек.
+    JSON плоский: поля организации хранятся с префиксом company_ (company_inn и т.д.).
     Ключи, которых нет в файле, пропускаются - остаются значения по умолчанию.
     Если данные некорректны - используются настройки по умолчанию
     """
@@ -49,10 +50,10 @@ class settings_manager(abstract_manager):
         settings = settings_model()
         try:
             company = company_model()
-            company_data = self.__data.get("company", {})
             for field in ("name", "inn", "bic", "corr_account", "account", "ownership"):
-                if field in company_data:
-                    setattr(company, field, company_data[field])
+                key = f"company_{field}"
+                if key in self.__data:
+                    setattr(company, field, self.__data[key])
             settings.company = company
 
             for field in ("boss_name", "account_name", "first_start"):
