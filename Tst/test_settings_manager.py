@@ -166,3 +166,4 @@ def test_default_settings_manager_load_invalid_data(tmp_path):
     assert not manager.is_loaded
     assert manager.settings is not None
     assert manager.settings.boss_name == ""
+    assert manager.settings.first_start

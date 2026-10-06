@@ -50,7 +50,7 @@ class settings_manager(abstract_manager):
                     setattr(company, field, company_data[field])
             settings.company = company
 
-            for field in ("boss_name", "account_name"):
+            for field in ("boss_name", "account_name", "first_start"):
                 if field in self.__data:
                     setattr(settings, field, self.__data[field])
         except Exception:
