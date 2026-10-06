@@ -12,6 +12,8 @@ class settings_model(abstract_model):
     _boss_name:str = ""
     """Наименование главного бухгалтера"""
     _account_name:str = ""
+    """Флаг. Первый старт - нужно сформировать первичные данные"""
+    _first_start:bool = True
 
 
     """
@@ -50,3 +52,15 @@ class settings_model(abstract_model):
     def account_name(self, value: str) -> None:
         validator.validate(value, str, 255)
         self._account_name = value.strip()
+
+    """
+    Флаг. Первый старт
+    """
+    @property
+    def first_start(self) -> bool:
+        return self._first_start
+
+    @first_start.setter
+    def first_start(self, value: bool) -> None:
+        validator.validate(value, bool)
+        self._first_start = value
