@@ -50,7 +50,7 @@ patterns_HW/
 ## Базовый класс
 
 Все доменные модели наследуются от абстрактного класса
-[`abstract_model`](Src/Core/Abstract.py). Он задаёт для каждой записи:
+[`abstract_model`](Src/Core/abstract_model.py). Он задаёт для каждой записи:
 
 - `code` — неизменяемый код, создаваемый вместе с объектом;
 - `title` — название с контролем пустого значения и обрезкой краевых пробелов;
@@ -59,7 +59,7 @@ patterns_HW/
 Пример наследника:
 
 ```python
-from Src.Core.Abstract import abstract_model
+from Src.Core.abstract_model import abstract_model
 
 
 class warehouse(abstract_model):
