@@ -36,10 +36,13 @@ class nomenclature_model(entity_model):
         self.__range = value
 
 
-
-
-
-
-
-        
-    
+    """
+    Фабричный метод. Номенклатура с группой и единицей измерения
+    """
+    @staticmethod
+    def create(name: str, group: group_model, range: range_model) -> 'nomenclature_model':
+        result = nomenclature_model()
+        result.name = name
+        result.group = group
+        result.range = range
+        return result

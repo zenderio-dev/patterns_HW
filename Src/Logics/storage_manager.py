@@ -4,10 +4,12 @@ from Src.Models.range_model import range_model
 from Src.Models.group_model import group_model
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.storage_model import storage_model
+from Src.Models.receipt_model import receipt_model
+from Src.Models.receipt_item_model import receipt_item_model
 
 """
-Менеджер хранилища (singleton). Хранит склады, единицы измерения, группы
-и номенклатуру. При первом старте (settings.first_start) формирует первичные данные
+Менеджер хранилища (singleton). Хранит склады, единицы измерения, группы,
+номенклатуру и технологические карты. При первом старте (settings.first_start) формирует первичные данные
 """
 class storage_manager(abstract_manager):
     """Ключи справочников в хранилище"""
@@ -15,8 +17,8 @@ class storage_manager(abstract_manager):
     group_key: str = "group"
     nomenclature_key: str = "nomenclature"
     storage_key: str = "storage"
+    receipt_key: str = "receipt"
 
-    __source: dict = None
     __data: dict = None
     __is_loaded: bool = False
 
@@ -28,8 +30,7 @@ class storage_manager(abstract_manager):
         return cls.instance
 
     """
-    Сформировать первичные данные справочников (ингредиенты рецепта Docs/Recipe.md)
-    и преобразовать их в модели. Уже сформированные данные берутся из кэша.
+    Сформировать первичные данные. Уже сформированные данные берутся из кэша.
     force = True - сформировать данные заново.
     Если это не первый старт - хранилище остаётся пустым
     """
@@ -38,71 +39,56 @@ class storage_manager(abstract_manager):
             return
 
         if not settings_manager().settings.first_start:
-            self.__data = {key: [] for key in (self.range_key, self.group_key, self.nomenclature_key, self.storage_key)}
+            self.__data = {key: [] for key in (self.range_key, self.group_key, self.nomenclature_key, self.storage_key, self.receipt_key)}
             self.__is_loaded = False
             return
 
-        self.__source = {
-            self.range_key: [
-                # наименование, коэффициент, базовая единица
-                ("грамм", 1, None),
-                ("кг", 1000, "грамм"),
-                ("штука", 1, None),
-            ],
-            self.group_key: ["Сырьё"],
-            self.nomenclature_key: [
-                # наименование, группа, единица измерения
-                ("Пшеничная мука", "Сырьё", "кг"),
-                ("Сахар", "Сырьё", "кг"),
-                ("Сливочное масло", "Сырьё", "кг"),
-                ("Яйца", "Сырьё", "штука"),
-                ("Ванилин", "Сырьё", "грамм"),
-            ],
-            self.storage_key: [
-                # наименование, адрес
-                ("Основной склад", "г. Иркутск, ул. Ленина, 1"),
-            ],
-        }
         self.__is_loaded = self.convert()
 
     """
-    Преобразовать исходные данные в модели
+    Сформировать первичные данные фабричными методами моделей:
+    справочники и технологическую карту по рецепту Docs/Recipe.md
     """
     def convert(self) -> bool:
-        ranges = {}
-        for name, value, base_name in self.__source[self.range_key]:
-            item = range_model()
-            item.name = name
-            item.value = value
-            item.base = ranges[base_name] if base_name else None
-            ranges[name] = item
+        gram = range_model.create_gram()
+        kilogram = range_model.create_kilogram(gram)
+        piece = range_model.create_piece()
 
-        groups = {}
-        for name in self.__source[self.group_key]:
-            item = group_model()
-            item.name = name
-            groups[name] = item
+        raw = group_model.create("Сырьё")
+        packaging = group_model.create("Упаковка")
 
-        nomenclatures = []
-        for name, group_name, range_name in self.__source[self.nomenclature_key]:
-            item = nomenclature_model()
-            item.name = name
-            item.group = groups[group_name]
-            item.range = ranges[range_name]
-            nomenclatures.append(item)
+        flour = nomenclature_model.create("Пшеничная мука", raw, kilogram)
+        cottage_cheese = nomenclature_model.create("Творог", raw, kilogram)
+        sugar = nomenclature_model.create("Сахар", raw, kilogram)
+        egg = nomenclature_model.create("Яйца", raw, piece)
+        oil = nomenclature_model.create("Растительное масло", raw, kilogram)
+        container = nomenclature_model.create("Контейнер для доставки", packaging, piece)
 
-        storages = []
-        for name, address in self.__source[self.storage_key]:
-            item = storage_model()
-            item.name = name
-            item.address = address
-            storages.append(item)
+        storage = storage_model.create("Основной склад", "г. Иркутск, ул. Ленина, 1")
+
+        receipt = receipt_model.create("Сырники", 4, 30)
+        receipt.add_item(receipt_item_model.create(cottage_cheese, gram, 400))
+        receipt.add_item(receipt_item_model.create(egg, piece, 1, unit_weight=50, waste=12))
+        receipt.add_item(receipt_item_model.create(flour, gram, 60))
+        receipt.add_item(receipt_item_model.create(sugar, gram, 40))
+        receipt.add_item(receipt_item_model.create(oil, gram, 20))
+        receipt.add_item(receipt_item_model.create(container, piece, 1, unit_weight=15))
+        for step in (
+            "Разомните творог вилкой до однородности.",
+            "Добавьте яйцо и сахар, перемешайте.",
+            "Всыпьте муку и замесите мягкое тесто.",
+            "Сформируйте 8 сырников и обваляйте их в муке.",
+            "Обжарьте на масле по 3-4 минуты с каждой стороны до золотистой корочки.",
+            "Для доставки уложите сырники в контейнер и закройте крышкой.",
+        ):
+            receipt.add_step(step)
 
         self.__data = {
-            self.range_key: list(ranges.values()),
-            self.group_key: list(groups.values()),
-            self.nomenclature_key: nomenclatures,
-            self.storage_key: storages,
+            self.range_key: [gram, kilogram, piece],
+            self.group_key: [raw, packaging],
+            self.nomenclature_key: [flour, cottage_cheese, sugar, egg, oil, container],
+            self.storage_key: [storage],
+            self.receipt_key: [receipt],
         }
         return True
 
