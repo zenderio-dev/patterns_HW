@@ -21,4 +21,12 @@ class storage_model(entity_model):
         self.__address = value.strip()
 
 
-    
+    """
+    Фабричный метод. Склад с наименованием и адресом
+    """
+    @staticmethod
+    def create(name: str, address: str) -> 'storage_model':
+        result = storage_model()
+        result.name = name
+        result.address = address
+        return result
