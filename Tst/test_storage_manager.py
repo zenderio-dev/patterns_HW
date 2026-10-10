@@ -21,7 +21,7 @@ def test_is_loaded_storage_manager_first_start():
 """
 <summary>
 Первый старт: сформированы единицы измерения «грамм», «кг», «штука»,
-группа «Сырьё», склад и номенклатура из ингредиентов рецепта Docs/Recipe.md
+группы «Сырьё» и «Упаковка», склад и номенклатура из ингредиентов рецепта Docs/Recipe.md
 </summary>
 """
 def test_equals_storage_manager_first_start_data():
@@ -36,8 +36,8 @@ def test_equals_storage_manager_first_start_data():
 
     # Проверка
     assert ranges == ["грамм", "кг", "штука"]
-    assert groups == ["Сырьё"]
-    assert nomenclatures == ["Пшеничная мука", "Сахар", "Сливочное масло", "Яйца", "Ванилин"]
+    assert groups == ["Сырьё", "Упаковка"]
+    assert nomenclatures == ["Пшеничная мука", "Творог", "Сахар", "Яйца", "Растительное масло", "Контейнер для доставки"]
     assert len(storages) == 1
 
 
@@ -138,6 +138,7 @@ def test_equals_storage_manager_load_nomenclature_links():
     assert flour.range.name == "кг"
     assert flour.range.value == 1000
     assert flour.range.base.name == "грамм"
+    assert flour.range.base is ranges[0]
 
 
 """
@@ -220,3 +221,49 @@ def test_empty_storage_manager_load_not_first_start():
 
     settings.first_start = True
     manager.load(force=True)
+
+
+"""
+<summary>
+Первый старт: сформирована технологическая карта «Сырники» с упаковкой для доставки -
+4 порции, 30 минут, 6 строк (5 ингредиентов + контейнер), 6 шагов приготовления.
+Брутто 585 г (400 + 50 + 60 + 40 + 20 + 15), нетто 579 г (яйцо: 50 г минус 12 % скорлупы = 44 г)
+</summary>
+"""
+def test_equals_storage_manager_first_start_receipt():
+    # Подготовка
+    manager = storage_manager()
+
+    # Действие
+    receipt = manager.data[storage_manager.receipt_key][0]
+
+    # Проверка
+    assert receipt.name == "Сырники"
+    assert receipt.portions == 4
+    assert receipt.cooking_time == 30
+    assert len(receipt.items) == 6
+    assert len(receipt.steps) == 6
+    assert receipt.brutto == 585
+    assert receipt.netto == 579
+    assert any(item.nomenclature.group.name == "Упаковка" for item in receipt.items)
+
+
+"""
+<summary>
+Строки технологической карты ссылаются на те же объекты номенклатуры
+и единиц измерения, что хранятся в справочниках хранилища
+</summary>
+"""
+def test_equals_storage_manager_first_start_receipt_links():
+    # Подготовка
+    manager = storage_manager()
+    nomenclatures = manager.data[storage_manager.nomenclature_key]
+    ranges = manager.data[storage_manager.range_key]
+
+    # Действие
+    receipt = manager.data[storage_manager.receipt_key][0]
+
+    # Проверка
+    for item in receipt.items:
+        assert any(item.nomenclature is nomenclature for nomenclature in nomenclatures)
+        assert any(item.range is range for range in ranges)
