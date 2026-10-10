@@ -51,7 +51,7 @@ classDiagram
 
 ## storage_manager
 
-Хранит справочники. Если в настройках включён `first_start`, при первом обращении сам заполняется ингредиентами из [рецепта](Recipe.md).
+Хранит справочники и техкарты. Если в настройках включён `first_start`, при первом обращении сам заполняется данными [рецепта](Recipe.md) — через фабричные методы моделей.
 
 ```mermaid
 classDiagram
@@ -75,21 +75,27 @@ classDiagram
         +name
         +value
         +base
+        +create_gram()$
+        +create_kilogram(base)$
+        +create_piece()$
     }
 
     class group_model {
         +name
+        +create(name)$
     }
 
     class nomenclature_model {
         +name
         +group
         +range
+        +create(name, group, range)$
     }
 
     class storage_model {
         +name
         +address
+        +create(name, address)$
     }
 
     class settings_manager {
@@ -103,10 +109,64 @@ classDiagram
     storage_manager o-- group_model : группы
     storage_manager o-- nomenclature_model : номенклатура
     storage_manager o-- storage_model : склады
+    storage_manager o-- receipt_model : техкарты
     nomenclature_model --> group_model : входит в группу
     nomenclature_model --> range_model : измеряется в
     range_model --> range_model : базовая единица
 
-    note for storage_manager "При создании сам вызывает load().<br>Если first_start — создаёт грамм, кг, штуку,<br>группу «Сырьё», склад и 5 ингредиентов вафель,<br>иначе справочники пустые.<br>Дальше данные берутся из кэша"
-    note for range_model "кг: value = 1000, base = грамм<br>грамм: value = 1, base нет"
+    note for storage_manager "При создании сам вызывает load().<br>Если first_start — фабриками создаёт грамм, кг, штуку,<br>группы «Сырьё» и «Упаковка», склад, номенклатуру<br>и техкарту «Сырники», иначе справочники пустые.<br>Дальше данные берутся из кэша"
+    note for range_model "кг: value = 1000, base = грамм<br>грамм и штука: value = 1, base нет"
+```
+
+## Технологическая карта
+
+Рецепт — это `receipt_model` (корень агрегата): строки меняются только через `add_item()` / `remove_item()`, а брутто и нетто карты считаются как сумма по строкам.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class receipt_model {
+        +name
+        +portions
+        +cooking_time
+        +items
+        +steps
+        +brutto
+        +netto
+        +add_item(item)
+        +remove_item(nomenclature)
+        +add_step(step)
+        +create(name, portions, cooking_time)$
+    }
+
+    class receipt_item_model {
+        +nomenclature
+        +range
+        +quantity
+        +unit_weight
+        +waste
+        +brutto
+        +netto
+        +create(nomenclature, range, quantity, unit_weight, waste)$
+    }
+
+    class nomenclature_model {
+        +name
+        +group
+        +range
+    }
+
+    class range_model {
+        +name
+        +value
+        +base
+    }
+
+    receipt_model *-- receipt_item_model : строки
+    receipt_item_model --> nomenclature_model : ингредиент или упаковка
+    receipt_item_model --> range_model : единица количества
+
+    note for receipt_model "брутто = сумма брутто строк<br>нетто = сумма нетто строк"
+    note for receipt_item_model "брутто = quantity × unit_weight, г<br>нетто = брутто × (100 − waste) / 100"
 ```
