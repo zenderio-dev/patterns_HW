@@ -5,8 +5,9 @@ from Src.Models.nomenclature_model import nomenclature_model
 
 """
 Модель технологической карты (рецепта): состав, выход, описание процесса.
-Корень агрегата - строки изменяются только через методы карты,
-масса брутто / нетто вычисляется по строкам
+Корень агрегата - строки изменяются только через методы карты.
+Карта может включать другие карты («блюдо в блюде»), поэтому масса
+брутто / нетто вычисляется рекурсивно по всем уровням вложенности
 """
 class receipt_model(entity_model):
     __portions: int = 1
@@ -58,24 +59,38 @@ class receipt_model(entity_model):
         return tuple(self.__items)
 
     """
-    Добавить строку. Один ингредиент может входить в карту только один раз
+    Добавить строку. Ингредиент или полуфабрикат может входить в карту только один раз.
+    Нельзя вложить карту саму в себя - ни напрямую, ни через другие карты
     """
     def add_item(self, item: receipt_item_model) -> None:
         validator.validate(item, receipt_item_model)
-        if any(row.nomenclature == item.nomenclature for row in self.__items):
+        if item.component is None:
+            raise argument_exception("item", "В строке не указан ни ингредиент, ни полуфабрикат")
+        if any(row.component == item.component for row in self.__items):
             raise argument_exception("item", "Ингредиент уже есть в технологической карте")
+        if item.receipt is not None and (item.receipt == self or item.receipt.contains(self)):
+            raise argument_exception("item", "Технологическая карта не может содержать саму себя")
         self.__items.append(item)
 
     """
-    Исключить из карты строку с ингредиентом nomenclature
+    Исключить из карты строку с ингредиентом или полуфабрикатом component
     """
-    def remove_item(self, nomenclature: nomenclature_model) -> None:
-        validator.validate(nomenclature, nomenclature_model)
+    def remove_item(self, component) -> None:
+        validator.validate(component, (nomenclature_model, receipt_model))
         for row in self.__items:
-            if row.nomenclature == nomenclature:
+            if row.component == component:
                 self.__items.remove(row)
                 return
-        raise argument_exception("nomenclature", "Ингредиента нет в технологической карте")
+        raise argument_exception("component", "Такого ингредиента нет в технологической карте")
+
+    """
+    Рекурсивно проверить, входит ли карта receipt в состав этой карты на любом уровне
+    """
+    def contains(self, receipt: 'receipt_model') -> bool:
+        for row in self.__items:
+            if row.receipt is not None and (row.receipt == receipt or row.receipt.contains(receipt)):
+                return True
+        return False
 
     """
     Шаги приготовления (только чтение)
@@ -92,14 +107,14 @@ class receipt_model(entity_model):
         self.__steps.append(step.strip())
 
     """
-    Масса брутто всей карты, г
+    Масса брутто всей карты, г - сумма по строкам (вложенные карты считаются рекурсивно)
     """
     @property
     def brutto(self) -> float:
         return sum(item.brutto for item in self.__items)
 
     """
-    Масса нетто всей карты, г
+    Масса нетто всей карты, г - сумма по строкам (вложенные карты считаются рекурсивно)
     """
     @property
     def netto(self) -> float:

@@ -114,13 +114,13 @@ classDiagram
     nomenclature_model --> range_model : измеряется в
     range_model --> range_model : базовая единица
 
-    note for storage_manager "При создании сам вызывает load().<br>Если first_start — фабриками создаёт грамм, кг, штуку,<br>группы «Сырьё» и «Упаковка», склад, номенклатуру<br>и техкарту «Сырники», иначе справочники пустые.<br>Дальше данные берутся из кэша"
+    note for storage_manager "При создании сам вызывает load().<br>Если first_start — фабриками создаёт грамм, кг, штуку,<br>группы «Сырьё» и «Упаковка», склад, номенклатуру<br>и техкарты «Творожное тесто» и «Сырники»,<br>иначе справочники пустые.<br>Дальше данные берутся из кэша"
     note for range_model "кг: value = 1000, base = грамм<br>грамм и штука: value = 1, base нет"
 ```
 
 ## Технологическая карта
 
-Рецепт — это `receipt_model` (корень агрегата): строки меняются только через `add_item()` / `remove_item()`, а брутто и нетто карты считаются как сумма по строкам.
+Рецепт — это `receipt_model` (корень агрегата): строки меняются только через `add_item()` / `remove_item()`. Строка содержит ингредиент **или** другую техкарту (полуфабрикат, «блюдо в блюде»), поэтому брутто и нетто считаются **рекурсивно** через все уровни вложенности. Вложить карту саму в себя нельзя.
 
 ```mermaid
 classDiagram
@@ -135,13 +135,16 @@ classDiagram
         +brutto
         +netto
         +add_item(item)
-        +remove_item(nomenclature)
+        +remove_item(component)
         +add_step(step)
+        +contains(receipt)
         +create(name, portions, cooking_time)$
     }
 
     class receipt_item_model {
         +nomenclature
+        +receipt
+        +component
         +range
         +quantity
         +unit_weight
@@ -149,6 +152,7 @@ classDiagram
         +brutto
         +netto
         +create(nomenclature, range, quantity, unit_weight, waste)$
+        +create_from_receipt(receipt, quantity)$
     }
 
     class nomenclature_model {
@@ -165,8 +169,9 @@ classDiagram
 
     receipt_model *-- receipt_item_model : строки
     receipt_item_model --> nomenclature_model : ингредиент или упаковка
+    receipt_item_model --> receipt_model : полуфабрикат (вложенная карта)
     receipt_item_model --> range_model : единица количества
 
-    note for receipt_model "брутто = сумма брутто строк<br>нетто = сумма нетто строк"
-    note for receipt_item_model "брутто = quantity × unit_weight, г<br>нетто = брутто × (100 − waste) / 100"
+    note for receipt_model "брутто = сумма брутто строк<br>нетто = сумма нетто строк<br>(рекурсивно через вложенные карты)"
+    note for receipt_item_model "ингредиент: брутто = quantity × unit_weight, г<br>нетто = брутто × (100 − waste) / 100<br>полуфабрикат: брутто = quantity × receipt.brutto<br>нетто = quantity × receipt.netto"
 ```

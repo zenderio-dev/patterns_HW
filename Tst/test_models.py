@@ -399,3 +399,125 @@ def test_raise_receipt_model_remove_item_missing():
     with pytest.raises(argument_exception):
         receipt.remove_item(missing)
 
+"""
+<summary>
+Вспомогательная функция: технологическая карта name с одним ингредиентом
+массой grams граммов без отходов
+</summary>
+"""
+def create_receipt(name: str, grams: float) -> receipt_model:
+    receipt = receipt_model.create(name, 1, 10)
+    receipt.add_item(create_receipt_item(f"{name} - ингредиент", grams, range_model.create_gram()))
+    return receipt
+
+"""
+<summary>
+Строка с вложенной картой (полуфабрикатом): брутто и нетто строки рекурсивно
+берутся из вложенной карты и умножаются на количество (половина выхода - 0.5)
+</summary>
+"""
+def test_equals_receipt_item_model_create_from_receipt():
+    # Подготовка
+    dough = create_receipt("Тесто", 400)
+    egg = create_receipt_item("Яйца", 1, range_model.create_piece())
+    egg.unit_weight = 50
+    egg.waste = 12
+    dough.add_item(egg)
+
+    # Действие
+    item = receipt_item_model.create_from_receipt(dough, 0.5)
+
+    # Проверки
+    assert item.receipt is dough
+    assert item.brutto == 225
+    assert item.netto == 222
+
+"""
+<summary>
+«Блюдо в блюде» на трёх уровнях: соус (50 г) входит в начинку (100 г + соус),
+начинка входит в блюдо (200 г + начинка). Брутто блюда считается рекурсивно = 350 г
+</summary>
+"""
+def test_equals_receipt_model_brutto_three_levels():
+    # Подготовка
+    sauce = create_receipt("Соус", 50)
+    filling = create_receipt("Начинка", 100)
+    dish = create_receipt("Блюдо", 200)
+
+    # Действие
+    filling.add_item(receipt_item_model.create_from_receipt(sauce))
+    dish.add_item(receipt_item_model.create_from_receipt(filling))
+
+    # Проверки
+    assert filling.brutto == 150
+    assert dish.brutto == 350
+    assert dish.netto == 350
+
+"""
+<summary>
+Добавление ингредиента во вложенную карту сразу меняет брутто и нетто
+внешнего блюда - вес не хранится, а пересчитывается рекурсивно
+</summary>
+"""
+def test_increase_receipt_model_add_item_to_nested():
+    # Подготовка
+    dough = create_receipt("Тесто", 400)
+    dish = create_receipt("Сырники", 20)
+    dish.add_item(receipt_item_model.create_from_receipt(dough))
+
+    # Действие
+    dough.add_item(create_receipt_item("Сахар", 40, range_model.create_gram()))
+
+    # Проверки
+    assert dish.brutto == 460
+    assert dish.netto == 460
+
+"""
+<summary>
+Исключение полуфабриката из блюда уменьшает брутто и нетто на его вес
+</summary>
+"""
+def test_decrease_receipt_model_remove_nested():
+    # Подготовка
+    dough = create_receipt("Тесто", 400)
+    dish = create_receipt("Сырники", 20)
+    dish.add_item(receipt_item_model.create_from_receipt(dough))
+
+    # Действие
+    dish.remove_item(dough)
+
+    # Проверки
+    assert dish.brutto == 20
+    assert len(dish.items) == 1
+
+"""
+<summary>
+Карту нельзя вложить саму в себя: ни напрямую (A в A), ни через цепочку
+(B уже внутри A, затем A в B) - иначе брутто считалось бы бесконечно
+</summary>
+"""
+def test_raise_receipt_model_add_item_cycle():
+    # Подготовка
+    first = create_receipt("Первое", 100)
+    second = create_receipt("Второе", 50)
+    first.add_item(receipt_item_model.create_from_receipt(second))
+
+    # Действие и проверка
+    with pytest.raises(argument_exception):
+        first.add_item(receipt_item_model.create_from_receipt(first))
+    with pytest.raises(argument_exception):
+        second.add_item(receipt_item_model.create_from_receipt(first))
+
+"""
+<summary>
+В одной строке нельзя одновременно указать ингредиент и вложенную карту
+</summary>
+"""
+def test_raise_receipt_item_model_nomenclature_and_receipt():
+    # Подготовка
+    item = create_receipt_item("Сахар", 40, range_model.create_gram())
+
+    # Действие и проверка
+    with pytest.raises(argument_exception):
+        item.receipt = create_receipt("Тесто", 400)
+

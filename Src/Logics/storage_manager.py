@@ -66,17 +66,25 @@ class storage_manager(abstract_manager):
 
         storage = storage_model.create("Основной склад", "г. Иркутск, ул. Ленина, 1")
 
-        receipt = receipt_model.create("Сырники", 4, 30)
-        receipt.add_item(receipt_item_model.create(cottage_cheese, gram, 400))
-        receipt.add_item(receipt_item_model.create(egg, piece, 1, unit_weight=50, waste=12))
-        receipt.add_item(receipt_item_model.create(flour, gram, 60))
-        receipt.add_item(receipt_item_model.create(sugar, gram, 40))
-        receipt.add_item(receipt_item_model.create(oil, gram, 20))
-        receipt.add_item(receipt_item_model.create(container, piece, 1, unit_weight=15))
+        # полуфабрикат («блюдо в блюде») - входит в сырники
+        dough = receipt_model.create("Творожное тесто", 4, 10)
+        dough.add_item(receipt_item_model.create(cottage_cheese, gram, 400))
+        dough.add_item(receipt_item_model.create(egg, piece, 1, unit_weight=50, waste=12))
+        dough.add_item(receipt_item_model.create(flour, gram, 60))
+        dough.add_item(receipt_item_model.create(sugar, gram, 40))
         for step in (
             "Разомните творог вилкой до однородности.",
             "Добавьте яйцо и сахар, перемешайте.",
             "Всыпьте муку и замесите мягкое тесто.",
+        ):
+            dough.add_step(step)
+
+        receipt = receipt_model.create("Сырники", 4, 30)
+        receipt.add_item(receipt_item_model.create_from_receipt(dough))
+        receipt.add_item(receipt_item_model.create(oil, gram, 20))
+        receipt.add_item(receipt_item_model.create(container, piece, 1, unit_weight=15))
+        for step in (
+            "Приготовьте творожное тесто.",
             "Сформируйте 8 сырников и обваляйте их в муке.",
             "Обжарьте на масле по 3-4 минуты с каждой стороны до золотистой корочки.",
             "Для доставки уложите сырники в контейнер и закройте крышкой.",
@@ -88,7 +96,7 @@ class storage_manager(abstract_manager):
             self.group_key: [raw, packaging],
             self.nomenclature_key: [flour, cottage_cheese, sugar, egg, oil, container],
             self.storage_key: [storage],
-            self.receipt_key: [receipt],
+            self.receipt_key: [dough, receipt],
         }
         return True
 

@@ -4,11 +4,12 @@ from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.range_model import range_model
 
 """
-Модель строки технологической карты: ингредиент, его количество
-и масса брутто / нетто в граммах
+Модель строки технологической карты: ингредиент или вложенная технологическая
+карта (полуфабрикат, «блюдо в блюде»), количество и масса брутто / нетто в граммах
 """
 class receipt_item_model(abstract_model):
     __nomenclature: nomenclature_model = None
+    __receipt = None
     __range: range_model = None
     __quantity: float = 1
     __unit_weight: float = None
@@ -32,7 +33,32 @@ class receipt_item_model(abstract_model):
     @nomenclature.setter
     def nomenclature(self, value: nomenclature_model):
         validator.validate(value, nomenclature_model)
+        if self.__receipt is not None:
+            raise argument_exception("nomenclature", "В строке уже указана вложенная технологическая карта")
         self.__nomenclature = value
+
+    """
+    Вложенная технологическая карта (полуфабрикат)
+    """
+    @property
+    def receipt(self):
+        return self.__receipt
+
+    @receipt.setter
+    def receipt(self, value):
+        # импорт внутри метода: receipt_model сам импортирует receipt_item_model
+        from Src.Models.receipt_model import receipt_model
+        validator.validate(value, receipt_model)
+        if self.__nomenclature is not None:
+            raise argument_exception("receipt", "В строке уже указан ингредиент")
+        self.__receipt = value
+
+    """
+    Состав строки: ингредиент или вложенная технологическая карта
+    """
+    @property
+    def component(self):
+        return self.__receipt if self.__receipt is not None else self.__nomenclature
 
     """
     Единица измерения, в которой указано количество (грамм, штука и т.д.)
@@ -92,17 +118,23 @@ class receipt_item_model(abstract_model):
         self.__waste = value
 
     """
-    Масса брутто, г - масса продукта до обработки
+    Масса брутто, г - масса продукта до обработки.
+    Для вложенной карты - рекурсивно: количество × брутто вложенной карты
     """
     @property
     def brutto(self) -> float:
+        if self.__receipt is not None:
+            return self.__quantity * self.__receipt.brutto
         return self.__quantity * self.unit_weight
 
     """
-    Масса нетто, г - масса продукта после холодной обработки (за вычетом отходов)
+    Масса нетто, г - масса продукта после холодной обработки (за вычетом отходов).
+    Для вложенной карты - рекурсивно: количество × нетто вложенной карты
     """
     @property
     def netto(self) -> float:
+        if self.__receipt is not None:
+            return self.__quantity * self.__receipt.netto
         return self.brutto * (100 - self.__waste) / 100
 
     """
@@ -119,4 +151,15 @@ class receipt_item_model(abstract_model):
         if unit_weight is not None:
             result.unit_weight = unit_weight
         result.waste = waste
+        return result
+
+    """
+    Фабричный метод. Строка с вложенной технологической картой (полуфабрикатом).
+    quantity - какая часть выхода полуфабриката используется (1 - весь)
+    """
+    @staticmethod
+    def create_from_receipt(receipt, quantity: float = 1) -> 'receipt_item_model':
+        result = receipt_item_model()
+        result.receipt = receipt
+        result.quantity = quantity
         return result
