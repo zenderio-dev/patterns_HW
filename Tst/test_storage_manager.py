@@ -21,7 +21,7 @@ def test_is_loaded_storage_manager_first_start():
 """
 <summary>
 Первый старт: сформированы единицы измерения «грамм», «кг», «штука»,
-группа «Сырьё», склад и номенклатура из ингредиентов рецепта Docs/Recipe.md
+группы «Сырьё» и «Упаковка», склад и номенклатура из ингредиентов рецепта Docs/Recipe.md
 </summary>
 """
 def test_equals_storage_manager_first_start_data():
@@ -36,8 +36,8 @@ def test_equals_storage_manager_first_start_data():
 
     # Проверка
     assert ranges == ["грамм", "кг", "штука"]
-    assert groups == ["Сырьё"]
-    assert nomenclatures == ["Пшеничная мука", "Сахар", "Сливочное масло", "Яйца", "Ванилин"]
+    assert groups == ["Сырьё", "Упаковка"]
+    assert nomenclatures == ["Пшеничная мука", "Творог", "Сахар", "Яйца", "Растительное масло", "Контейнер для доставки"]
     assert len(storages) == 1
 
 
@@ -138,6 +138,7 @@ def test_equals_storage_manager_load_nomenclature_links():
     assert flour.range.name == "кг"
     assert flour.range.value == 1000
     assert flour.range.base.name == "грамм"
+    assert flour.range.base is ranges[0]
 
 
 """
@@ -220,3 +221,60 @@ def test_empty_storage_manager_load_not_first_start():
 
     settings.first_start = True
     manager.load(force=True)
+
+
+"""
+<summary>
+Первый старт: сформированы две технологические карты - полуфабрикат «Творожное тесто»
+и блюдо «Сырники», в которое тесто входит как вложенная карта («блюдо в блюде»).
+Сырники: 4 порции, 30 минут, 3 строки (тесто + масло + контейнер), 4 шага.
+Брутто 585 г = тесто 550 (400 + 50 + 60 + 40) + 20 + 15,
+нетто 579 г = тесто 544 (яйцо: 50 г минус 12 % скорлупы = 44 г) + 20 + 15
+</summary>
+"""
+def test_equals_storage_manager_first_start_receipt():
+    # Подготовка
+    manager = storage_manager()
+    receipts = {receipt.name: receipt for receipt in manager.data[storage_manager.receipt_key]}
+
+    # Действие
+    dough = receipts["Творожное тесто"]
+    receipt = receipts["Сырники"]
+
+    # Проверка
+    assert receipt.portions == 4
+    assert receipt.cooking_time == 30
+    assert len(receipt.items) == 3
+    assert len(receipt.steps) == 4
+    assert dough.brutto == 550
+    assert dough.netto == 544
+    assert receipt.brutto == 585
+    assert receipt.netto == 579
+    assert any(item.receipt is dough for item in receipt.items)
+    assert any(item.nomenclature is not None and item.nomenclature.group.name == "Упаковка" for item in receipt.items)
+
+
+"""
+<summary>
+Строки технологических карт ссылаются на те же объекты номенклатуры
+и единиц измерения, что хранятся в справочниках хранилища
+(строки с вложенной картой ссылаются на карту из хранилища)
+</summary>
+"""
+def test_equals_storage_manager_first_start_receipt_links():
+    # Подготовка
+    manager = storage_manager()
+    nomenclatures = manager.data[storage_manager.nomenclature_key]
+    ranges = manager.data[storage_manager.range_key]
+    receipts = manager.data[storage_manager.receipt_key]
+
+    # Действие
+    items = [item for receipt in receipts for item in receipt.items]
+
+    # Проверка
+    for item in items:
+        if item.receipt is not None:
+            assert any(item.receipt is receipt for receipt in receipts)
+        else:
+            assert any(item.nomenclature is nomenclature for nomenclature in nomenclatures)
+            assert any(item.range is range for range in ranges)

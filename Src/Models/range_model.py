@@ -34,7 +34,33 @@ class range_model(entity_model):
     def base(self, value):
         self.__base = value
 
-    
-   
 
-    
+    """
+    Фабричный метод. Базовая единица измерения «грамм»
+    """
+    @staticmethod
+    def create_gram() -> 'range_model':
+        result = range_model()
+        result.name = "грамм"
+        return result
+
+    """
+    Фабричный метод. Единица измерения «кг» = 1000 грамм.
+    base - готовый «грамм», если не передан - создаётся новый
+    """
+    @staticmethod
+    def create_kilogram(base: 'range_model' = None) -> 'range_model':
+        result = range_model()
+        result.name = "кг"
+        result.value = 1000
+        result.base = base if base is not None else range_model.create_gram()
+        return result
+
+    """
+    Фабричный метод. Единица измерения «штука»
+    """
+    @staticmethod
+    def create_piece() -> 'range_model':
+        result = range_model()
+        result.name = "штука"
+        return result
