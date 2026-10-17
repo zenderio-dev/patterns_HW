@@ -7,5 +7,6 @@
     "company_ownership": "ООО",
     "boss_name": "Иванов Иван Иванович",
     "account_name": "Петрова Анна Сергеевна",
-    "first_start": true
+    "first_start": true,
+    "response_format": "Markdown"
 }

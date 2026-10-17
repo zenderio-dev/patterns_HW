@@ -3,6 +3,7 @@ from Src.Core.validator import validator, operation_exception
 import json
 from Src.Models.settings_model import settings_model
 from Src.Models.company_model import company_model
+from Src.Dtos.report_type_enum import report_type_enum
 
 """
 Менеджер настроек (singleton). Загружает настройки приложения из JSON-файла
@@ -59,6 +60,9 @@ class settings_manager(abstract_manager):
             for field in ("boss_name", "account_name", "first_start"):
                 if field in self.__data:
                     setattr(settings, field, self.__data[field])
+
+            if "response_format" in self.__data:
+                settings.response_format = report_type_enum[self.__data["response_format"].upper()]
         except Exception:
             self.__settings = settings_model()
             return False
