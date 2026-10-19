@@ -9,15 +9,31 @@ from Src.Dtos.report_result_dto import report_result_dto
 class csv_report(abstract_report):
 
     """
-    Сформировать отчет: CSV с разделителем «;» в кодировке UTF-8
+    Сформировать отчет: CSV с разделителем ";" в кодировке UTF-8, разделы через пустую строку
     """
     def build(self, source) -> report_result_dto:
-        header, rows = self._table(source)
         stream = io.StringIO()
         writer = csv.writer(stream, delimiter=";", lineterminator="\n")
-        writer.writerow(header)
-        writer.writerows(rows)
+        for index, (_, header, rows) in enumerate(self._sections(source)):
+            if index > 0:
+                writer.writerow([])
+            writer.writerow(header)
+            writer.writerows(rows)
 
         result = report_result_dto()
         result.binary = stream.getvalue().encode("utf-8")
         return result
+
+    """
+    Тип содержимого отчета
+    """
+    @property
+    def content_type(self) -> str:
+        return "text/csv"
+
+    """
+    Расширение файла отчета
+    """
+    @property
+    def file_extension(self) -> str:
+        return "csv"

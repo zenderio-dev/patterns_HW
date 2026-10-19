@@ -2,6 +2,7 @@ import csv
 import io
 import xml.etree.ElementTree as ElementTree
 import pytest
+from Src.Core.validator import argument_exception
 from Src.Dtos.report_type_enum import report_type_enum
 from Src.Logics.report_factory import report_factory
 from Src.Logics.text_report import text_report
@@ -18,7 +19,7 @@ from Src.Models.receipt_item_model import receipt_item_model
 
 """
 <summary>
-Вспомогательная функция: номенклатура «Пшеничная мука» в группе «Сырьё», единица «кг»
+Вспомогательная функция: номенклатура "Пшеничная мука" в группе "Сырьё", единица "кг"
 </summary>
 """
 def create_nomenclature() -> nomenclature_model:
@@ -26,7 +27,7 @@ def create_nomenclature() -> nomenclature_model:
 
 """
 <summary>
-Вспомогательная функция: рецепт «Сырники» - мука 60 г и яйцо 1 шт (50 г, отходы 12 %)
+Вспомогательная функция: рецепт "Сырники" - мука 60 г и яйцо 1 шт (50 г, отходы 12 %)
 </summary>
 """
 def create_receipt() -> receipt_model:
@@ -148,7 +149,8 @@ def test_contains_report_build_range(report_type):
 
 """
 <summary>
-Отчёт по рецепту в любом формате содержит каждую строку рецепта с брутто и нетто
+Отчёт по рецепту в любом формате содержит сам рецепт (брутто 110, нетто 104)
+и каждую его строку с брутто и нетто
 </summary>
 """
 @pytest.mark.parametrize("report_type", list(report_type_enum))
@@ -160,6 +162,9 @@ def test_contains_report_build_receipt(report_type):
     content = get_content(report.build(create_receipt()))
 
     # Проверка
+    assert "Сырники" in content
+    assert "110" in content
+    assert "104.0" in content
     assert "Пшеничная мука" in content
     assert "Яйца" in content
     assert "50" in content
@@ -167,8 +172,58 @@ def test_contains_report_build_receipt(report_type):
 
 """
 <summary>
-CSV-отчёт по рецепту: заголовок и по одной строке на каждый ингредиент
-с точными значениями брутто и нетто
+Фабрика создаёт отчёт по названию формата без учёта регистра
+</summary>
+"""
+def test_equals_report_factory_create_by_name():
+    # Подготовка
+    factory = report_factory(settings_model())
+
+    # Действие
+    report = factory.create_by_name("markdown")
+
+    # Проверка
+    assert isinstance(report, markdown_report)
+
+"""
+<summary>
+Неизвестное название формата приводит к исключению argument_exception
+</summary>
+"""
+def test_raise_report_factory_create_by_name_unknown():
+    # Подготовка
+    factory = report_factory(settings_model())
+
+    # Действие и проверка
+    with pytest.raises(argument_exception):
+        factory.create_by_name("pdf")
+
+"""
+<summary>
+Каждый отчёт знает свой тип содержимого и расширение файла
+</summary>
+"""
+@pytest.mark.parametrize("report_type, content_type, file_extension", [
+    (report_type_enum.TXT, "text/plain", "txt"),
+    (report_type_enum.CSV, "text/csv", "csv"),
+    (report_type_enum.MARKDOWN, "text/markdown", "md"),
+    (report_type_enum.XML, "application/xml", "xml"),
+    (report_type_enum.HTML, "text/html", "html"),
+])
+def test_equals_report_content_type_file_extension(report_type, content_type, file_extension):
+    # Подготовка
+    report = report_factory(settings_model()).create(report_type)
+
+    # Действие
+
+    # Проверка
+    assert report.content_type == content_type
+    assert report.file_extension == file_extension
+
+"""
+<summary>
+CSV-отчёт по рецепту: раздел рецепта (заголовок и строка), пустая строка,
+раздел строк рецепта (заголовок и по строке на ингредиент)
 </summary>
 """
 def test_equals_csv_report_build_receipt():
@@ -180,14 +235,17 @@ def test_equals_csv_report_build_receipt():
     rows = list(csv.reader(io.StringIO(content), delimiter=";"))
 
     # Проверка
-    assert rows[0] == ["Код", "Наименование", "Брутто", "Нетто"]
-    assert len(rows) == 3
-    assert rows[1][1:] == ["Пшеничная мука", "60", "60.0"]
-    assert rows[2][1:] == ["Яйца", "50", "44.0"]
+    assert len(rows) == 6
+    assert rows[0] == ["brutto", "cooking_time", "name", "netto", "portions", "unique_code"]
+    assert rows[1] == ["110", "30", "Сырники", "104.0", "4", receipt.unique_code]
+    assert rows[2] == []
+    assert rows[3][:4] == ["brutto", "component", "netto", "nomenclature"]
+    assert rows[5][:4] == ["50", "Яйца", "44.0", "Яйца"]
 
 """
 <summary>
-XML-отчёт по рецепту: корректный XML, по одному элементу row на каждый ингредиент
+XML-отчёт по рецепту: корректный XML из двух разделов - сам рецепт
+и его строки (items), по элементу row на каждый ингредиент
 </summary>
 """
 def test_equals_xml_report_build_receipt():
@@ -196,15 +254,17 @@ def test_equals_xml_report_build_receipt():
 
     # Действие
     root = ElementTree.fromstring(xml_report().build(receipt).text)
-    rows = root.findall("row")
+    sections = root.findall("section")
 
     # Проверка
-    assert len(rows) == 2
-    assert [field.text for field in rows[1]][1:] == ["Яйца", "50", "44.0"]
+    assert len(sections) == 2
+    assert len(sections[0].findall("row")) == 1
+    assert sections[1].get("name") == "items"
+    assert len(sections[1].findall("row")) == 2
 
 """
 <summary>
-Markdown-отчёт по рецепту: таблица из заголовка, разделителя и строки на каждый ингредиент
+Markdown-отчёт по рецепту: две таблицы - рецепт и строки рецепта
 </summary>
 """
 def test_equals_markdown_report_build_receipt():
@@ -212,17 +272,18 @@ def test_equals_markdown_report_build_receipt():
     receipt = create_receipt()
 
     # Действие
-    lines = markdown_report().build(receipt).binary.decode("utf-8").splitlines()
+    tables = markdown_report().build(receipt).binary.decode("utf-8").split("\n\n")
 
     # Проверка
-    assert len(lines) == 4
-    assert lines[0] == "| Код | Наименование | Брутто | Нетто |"
-    assert lines[1] == "| --- | --- | --- | --- |"
-    assert lines[3].endswith("| Яйца | 50 | 44.0 |")
+    assert len(tables) == 2
+    assert tables[0].splitlines()[0] == "| brutto | cooking_time | name | netto | portions | unique_code |"
+    assert tables[0].splitlines()[1] == "| --- | --- | --- | --- | --- | --- |"
+    assert len(tables[1].splitlines()) == 4
 
 """
 <summary>
-HTML-отчёт по рецепту: таблица из строки заголовка и строки на каждый ингредиент
+HTML-отчёт по рецепту: две таблицы - рецепт (заголовок и строка)
+и строки рецепта (заголовок и две строки)
 </summary>
 """
 def test_equals_html_report_build_receipt():
@@ -233,13 +294,12 @@ def test_equals_html_report_build_receipt():
     content = html_report().build(receipt).text
 
     # Проверка
-    assert content.startswith("<table>")
-    assert content.count("<tr>") == 3
-    assert content.count("<th>") == 4
+    assert content.count("<table>") == 2
+    assert content.count("<tr>") == 5
 
 """
 <summary>
-Текстовый отчёт по рецепту: строка заголовка и строка на каждый ингредиент
+Текстовый отчёт по рецепту: два блока через пустую строку - рецепт и строки рецепта
 </summary>
 """
 def test_equals_text_report_build_receipt():
@@ -247,9 +307,9 @@ def test_equals_text_report_build_receipt():
     receipt = create_receipt()
 
     # Действие
-    lines = text_report().build(receipt).text.splitlines()
+    blocks = text_report().build(receipt).text.split("\n\n")
 
     # Проверка
-    assert len(lines) == 3
-    assert lines[0] == "Код | Наименование | Брутто | Нетто"
-    assert lines[2].endswith("| Яйца | 50 | 44.0")
+    assert len(blocks) == 2
+    assert blocks[0].splitlines()[0] == "brutto | cooking_time | name | netto | portions | unique_code"
+    assert len(blocks[1].splitlines()) == 3

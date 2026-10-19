@@ -1,6 +1,6 @@
 from Src.Core.abstract_report_factory import abstract_report_factory
 from Src.Core.abstract_report import abstract_report
-from Src.Core.validator import validator
+from Src.Core.validator import validator, argument_exception
 from Src.Dtos.report_type_enum import report_type_enum
 from Src.Models.settings_model import settings_model
 from Src.Logics.text_report import text_report
@@ -35,6 +35,15 @@ class report_factory(abstract_report_factory):
     def create(self, report_type: report_type_enum) -> abstract_report:
         validator.validate(report_type, report_type_enum)
         return self.__mapping[report_type]()
+
+    """
+    Создать отчет по названию формата (без учета регистра)
+    """
+    def create_by_name(self, name: str) -> abstract_report:
+        validator.validate(name, str)
+        if name.upper() not in report_type_enum.__members__:
+            raise argument_exception("name", f"Неизвестный формат отчета: {name}")
+        return self.create(report_type_enum[name.upper()])
 
     """
     Создать отчет в формате из настроек (response_format)

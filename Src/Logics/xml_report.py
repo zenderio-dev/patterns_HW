@@ -8,17 +8,32 @@ from Src.Dtos.report_result_dto import report_result_dto
 class xml_report(abstract_report):
 
     """
-    Сформировать отчет: элемент row на каждую строку, field на каждое значение
+    Сформировать отчет: элемент section на раздел, row на строку, field на значение
     """
     def build(self, source) -> report_result_dto:
-        header, rows = self._table(source)
         root = ElementTree.Element("report")
-        for row in rows:
-            row_element = ElementTree.SubElement(root, "row")
-            for name, value in zip(header, row):
-                field = ElementTree.SubElement(row_element, "field", name=name)
-                field.text = str(value)
+        for name, header, rows in self._sections(source):
+            section = ElementTree.SubElement(root, "section", name=name)
+            for row in rows:
+                row_element = ElementTree.SubElement(section, "row")
+                for field_name, value in zip(header, row):
+                    field = ElementTree.SubElement(row_element, "field", name=field_name)
+                    field.text = str(value)
 
         result = report_result_dto()
         result.text = ElementTree.tostring(root, encoding="unicode")
         return result
+
+    """
+    Тип содержимого отчета
+    """
+    @property
+    def content_type(self) -> str:
+        return "application/xml"
+
+    """
+    Расширение файла отчета
+    """
+    @property
+    def file_extension(self) -> str:
+        return "xml"
