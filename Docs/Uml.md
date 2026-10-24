@@ -31,6 +31,7 @@ classDiagram
         +boss_name
         +account_name
         +first_start
+        +response_format
     }
 
     class company_model {
@@ -67,6 +68,9 @@ classDiagram
         <<singleton>>
         +load(force)
         +convert()
+        +get(key)
+        +find(key, unique_code)
+        +keys()
         +data
         +is_loaded
     }
@@ -174,4 +178,45 @@ classDiagram
 
     note for receipt_model "брутто = сумма брутто строк<br>нетто = сумма нетто строк<br>(рекурсивно через вложенные карты)"
     note for receipt_item_model "ингредиент: брутто = quantity × unit_weight, г<br>нетто = брутто × (100 − waste) / 100<br>полуфабрикат: брутто = quantity × receipt.brutto<br>нетто = quantity × receipt.netto"
+```
+
+## Конвертеры
+
+`convert_factory` превращает любой объект в набор словарей по его структуре (например, для JSON). По типу значения поля фабрика выбирает конвертер: простые типы — `basic_convertor`, дата — `datetime_convertor`, ссылки на модели и списки — `reference_convertor`, который вложенные объекты снова отдаёт фабрике.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class abstract_convertor {
+        <<abstract>>
+        +convert(source) dict
+    }
+
+    class basic_convertor {
+        +convert(source) dict
+    }
+
+    class datetime_convertor {
+        +convert(source) dict
+    }
+
+    class reference_convertor {
+        +convert(source) dict
+    }
+
+    class convert_factory {
+        +create(value) abstract_convertor
+        +convert(source)
+    }
+
+    abstract_convertor <|-- basic_convertor : наследует
+    abstract_convertor <|-- datetime_convertor : наследует
+    abstract_convertor <|-- reference_convertor : наследует
+    convert_factory o-- basic_convertor : числа, строки
+    convert_factory o-- datetime_convertor : дата
+    convert_factory o-- reference_convertor : ссылки, списки
+    reference_convertor --> convert_factory : вложенные объекты
+
+    note for convert_factory "простое значение - как есть<br>дата - строка ISO<br>список - список<br>объект - словарь по полям"
 ```
