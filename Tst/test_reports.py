@@ -313,3 +313,34 @@ def test_equals_text_report_build_receipt():
     assert len(blocks) == 2
     assert blocks[0].splitlines()[0] == "brutto | cooking_time | name | netto | portions | unique_code"
     assert len(blocks[1].splitlines()) == 3
+
+"""
+<summary>
+Фабрика хранит переданные ей настройки
+</summary>
+"""
+def test_equals_report_factory_settings():
+    # Подготовка
+    settings = settings_model()
+
+    # Действие
+    factory = report_factory(settings)
+
+    # Проверка
+    assert factory.settings is settings
+
+"""
+<summary>
+Фабрика возвращает список названий всех реализованных форматов отчетов
+</summary>
+"""
+def test_equals_report_factory_formats():
+    # Подготовка
+    factory = report_factory(settings_model())
+
+    # Действие
+    formats = factory.formats()
+
+    # Проверка
+    assert formats == ["TXT", "CSV", "MARKDOWN", "XML", "HTML"]
+

@@ -50,3 +50,16 @@ class report_factory(abstract_report_factory):
     """
     def create_default(self) -> abstract_report:
         return self.create(self.__settings.response_format)
+
+    """
+    Список названий реализованных форматов отчетов
+    """
+    def formats(self) -> list:
+        return [report_type.name for report_type in self.__mapping]
+
+    """
+    Текущие настройки
+    """
+    @property
+    def settings(self) -> settings_model:
+        return self.__settings

@@ -54,5 +54,19 @@ def get_list(entity: str):
         flask.abort(404, str(ex))
     return flask.jsonify([{"code": item.unique_code, "name": item.name} for item in items])
 
+"""
+Список форматов отчетов
+"""
+@api.route("/api/formats", methods=["GET"])
+def get_formats():
+    return flask.jsonify(report_factory(settings_manager().settings).formats())
+
+"""
+Список типов сущностей
+"""
+@api.route("/api/entities", methods=["GET"])
+def get_entities():
+    return flask.jsonify(storage_manager().keys())
+
 if __name__ == "__main__":
     api.run(host="0.0.0.0", port=8080)

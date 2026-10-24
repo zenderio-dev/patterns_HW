@@ -342,3 +342,19 @@ def test_raise_storage_manager_find_unknown_code():
     with pytest.raises(operation_exception):
         manager.find(storage_manager.receipt_key, "unknown")
 
+
+"""
+<summary>
+keys возвращает список типов сущностей (ключей справочников) хранилища
+</summary>
+"""
+def test_equals_storage_manager_keys():
+    # Подготовка
+    manager = storage_manager()
+
+    # Действие
+    keys = manager.keys()
+
+    # Проверка
+    assert keys == ["range", "group", "nomenclature", "storage", "receipt"]
+

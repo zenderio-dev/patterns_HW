@@ -102,6 +102,12 @@ class storage_manager(abstract_manager):
         return True
 
     """
+    Список типов сущностей (ключей справочников)
+    """
+    def keys(self) -> list:
+        return list(self.__data.keys())
+
+    """
     Все модели справочника key
     """
     def get(self, key: str) -> list:
