@@ -11,9 +11,9 @@ class markdown_report(abstract_report):
     """
     def build(self, source) -> report_result_dto:
         tables = []
-        for _, header, rows in self._sections(source):
-            lines = [self.__line(header), self.__line(["---"] * len(header))]
-            lines += [self.__line(row) for row in rows]
+        for section in self._sections(source):
+            lines = [self.__line(section.header), self.__line(["---"] * len(section.header))]
+            lines += [self.__line(row) for row in section.rows]
             tables.append("\n".join(lines))
 
         result = report_result_dto()

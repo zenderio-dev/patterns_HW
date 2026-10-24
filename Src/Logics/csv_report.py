@@ -14,11 +14,11 @@ class csv_report(abstract_report):
     def build(self, source) -> report_result_dto:
         stream = io.StringIO()
         writer = csv.writer(stream, delimiter=";", lineterminator="\n")
-        for index, (_, header, rows) in enumerate(self._sections(source)):
+        for index, section in enumerate(self._sections(source)):
             if index > 0:
                 writer.writerow([])
-            writer.writerow(header)
-            writer.writerows(rows)
+            writer.writerow(section.header)
+            writer.writerows(section.rows)
 
         result = report_result_dto()
         result.binary = stream.getvalue().encode("utf-8")

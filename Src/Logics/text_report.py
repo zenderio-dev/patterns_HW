@@ -11,8 +11,8 @@ class text_report(abstract_report):
     """
     def build(self, source) -> report_result_dto:
         blocks = []
-        for _, header, rows in self._sections(source):
-            blocks.append("\n".join(" | ".join(str(value) for value in row) for row in [header] + rows))
+        for section in self._sections(source):
+            blocks.append("\n".join(" | ".join(str(value) for value in row) for row in [section.header] + section.rows))
 
         result = report_result_dto()
         result.text = "\n\n".join(blocks)

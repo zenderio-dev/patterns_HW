@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ElementTree
 import pytest
 from Src.Core.validator import argument_exception
 from Src.Dtos.report_type_enum import report_type_enum
+from Src.Dtos.report_section_dto import report_section_dto
 from Src.Logics.report_factory import report_factory
 from Src.Logics.text_report import text_report
 from Src.Logics.csv_report import csv_report
@@ -343,4 +344,58 @@ def test_equals_report_factory_formats():
 
     # Проверка
     assert formats == ["TXT", "CSV", "MARKDOWN", "XML", "HTML"]
+
+"""
+<summary>
+DTO раздела отчета хранит наименование, заголовок и строки
+</summary>
+"""
+def test_equals_report_section_dto_values():
+    # Подготовка
+    section = report_section_dto()
+
+    # Действие
+    section.name = "items"
+    section.header = ["brutto", "netto"]
+    section.rows = [[50, 44.0]]
+
+    # Проверка
+    assert section.name == "items"
+    assert section.header == ["brutto", "netto"]
+    assert section.rows == [[50, 44.0]]
+
+"""
+<summary>
+Значения неверного типа в DTO раздела отчета приводят к исключению argument_exception
+</summary>
+"""
+@pytest.mark.parametrize("field, value", [
+    ("name", 1),
+    ("header", "brutto"),
+    ("rows", "50"),
+])
+def test_raise_report_section_dto_invalid_value(field, value):
+    # Подготовка
+    section = report_section_dto()
+
+    # Действие и проверка
+    with pytest.raises(argument_exception):
+        setattr(section, field, value)
+
+"""
+<summary>
+Разделы отчета по рецепту - DTO report_section_dto: сам рецепт и его строки (items)
+</summary>
+"""
+def test_equals_abstract_report_sections_receipt():
+    # Подготовка
+    receipt = create_receipt()
+
+    # Действие
+    sections = text_report()._sections(receipt)
+
+    # Проверка
+    assert all(isinstance(section, report_section_dto) for section in sections)
+    assert [section.name for section in sections] == ["receipt_model", "items"]
+    assert len(sections[1].rows) == 2
 

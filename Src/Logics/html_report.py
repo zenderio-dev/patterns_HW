@@ -12,9 +12,9 @@ class html_report(abstract_report):
     """
     def build(self, source) -> report_result_dto:
         lines = []
-        for _, header, rows in self._sections(source):
-            lines += ["<table>", self.__row(header, "th")]
-            lines += [self.__row(row, "td") for row in rows]
+        for section in self._sections(source):
+            lines += ["<table>", self.__row(section.header, "th")]
+            lines += [self.__row(row, "td") for row in section.rows]
             lines.append("</table>")
 
         result = report_result_dto()

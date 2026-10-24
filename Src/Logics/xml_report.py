@@ -12,11 +12,11 @@ class xml_report(abstract_report):
     """
     def build(self, source) -> report_result_dto:
         root = ElementTree.Element("report")
-        for name, header, rows in self._sections(source):
-            section = ElementTree.SubElement(root, "section", name=name)
-            for row in rows:
-                row_element = ElementTree.SubElement(section, "row")
-                for field_name, value in zip(header, row):
+        for section in self._sections(source):
+            section_element = ElementTree.SubElement(root, "section", name=section.name)
+            for row in section.rows:
+                row_element = ElementTree.SubElement(section_element, "row")
+                for field_name, value in zip(section.header, row):
                     field = ElementTree.SubElement(row_element, "field", name=field_name)
                     field.text = str(value)
 
