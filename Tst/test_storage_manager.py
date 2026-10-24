@@ -1,5 +1,7 @@
 from Src.Logics.storage_manager import storage_manager
 from Src.Logics.settings_manager import settings_manager
+from Src.Core.validator import operation_exception
+import pytest
 
 """
 <summary>
@@ -20,8 +22,8 @@ def test_is_loaded_storage_manager_first_start():
 
 """
 <summary>
-Первый старт: сформированы единицы измерения «грамм», «кг», «штука»,
-группы «Сырьё» и «Упаковка», склад и номенклатура из ингредиентов рецепта Docs/Recipe.md
+Первый старт: сформированы единицы измерения "грамм", "кг", "штука",
+группы "Сырьё" и "Упаковка", склад и номенклатура из ингредиентов рецепта Docs/Recipe.md
 </summary>
 """
 def test_equals_storage_manager_first_start_data():
@@ -119,7 +121,7 @@ def test_not_empty_storage_manager_load_all_keys():
 """
 <summary>
 Проверить, что номенклатура ссылается на те же единицы измерения
-и группы, что лежат в хранилище, а «кг» пересчитывается в граммы
+и группы, что лежат в хранилище, а "кг" пересчитывается в граммы
 </summary>
 """
 def test_equals_storage_manager_load_nomenclature_links():
@@ -162,7 +164,7 @@ def test_equals_storage_manager_load_models_hashable():
 
 """
 <summary>
-Кэширование: повторный вызов load() не пересоздаёт модели —
+Кэширование: повторный вызов load() не пересоздаёт модели -
 хранилище отдаёт те же объекты с теми же уникальными кодами
 </summary>
 """
@@ -180,7 +182,7 @@ def test_equals_storage_manager_load_cached():
 
 """
 <summary>
-Кэширование: load(force=True) формирует данные заново —
+Кэширование: load(force=True) формирует данные заново -
 модели создаются повторно и получают новые уникальные коды
 </summary>
 """
@@ -225,8 +227,8 @@ def test_empty_storage_manager_load_not_first_start():
 
 """
 <summary>
-Первый старт: сформированы две технологические карты - полуфабрикат «Творожное тесто»
-и блюдо «Сырники», в которое тесто входит как вложенная карта («блюдо в блюде»).
+Первый старт: сформированы две технологические карты - полуфабрикат "Творожное тесто"
+и блюдо "Сырники", в которое тесто входит как вложенная карта ("блюдо в блюде").
 Сырники: 4 порции, 30 минут, 3 строки (тесто + масло + контейнер), 4 шага.
 Брутто 585 г = тесто 550 (400 + 50 + 60 + 40) + 20 + 15,
 нетто 579 г = тесто 544 (яйцо: 50 г минус 12 % скорлупы = 44 г) + 20 + 15
@@ -278,3 +280,81 @@ def test_equals_storage_manager_first_start_receipt_links():
         else:
             assert any(item.nomenclature is nomenclature for nomenclature in nomenclatures)
             assert any(item.range is range for range in ranges)
+
+
+"""
+<summary>
+get возвращает все модели справочника по ключу
+</summary>
+"""
+def test_equals_storage_manager_get():
+    # Подготовка
+    manager = storage_manager()
+
+    # Действие
+    result = manager.get(storage_manager.range_key)
+
+    # Проверка
+    assert result is manager.data[storage_manager.range_key]
+
+
+"""
+<summary>
+get с неизвестным ключом справочника приводит к исключению operation_exception
+</summary>
+"""
+def test_raise_storage_manager_get_unknown_key():
+    # Подготовка
+    manager = storage_manager()
+
+    # Действие и проверка
+    with pytest.raises(operation_exception):
+        manager.get("unknown")
+
+
+"""
+<summary>
+find находит модель справочника по уникальному коду
+</summary>
+"""
+def test_equals_storage_manager_find():
+    # Подготовка
+    manager = storage_manager()
+    receipt = manager.data[storage_manager.receipt_key][0]
+
+    # Действие
+    result = manager.find(storage_manager.receipt_key, receipt.unique_code)
+
+    # Проверка
+    assert result is receipt
+
+
+"""
+<summary>
+find с несуществующим кодом приводит к исключению operation_exception
+</summary>
+"""
+def test_raise_storage_manager_find_unknown_code():
+    # Подготовка
+    manager = storage_manager()
+
+    # Действие и проверка
+    with pytest.raises(operation_exception):
+        manager.find(storage_manager.receipt_key, "unknown")
+
+
+"""
+<summary>
+keys возвращает список типов сущностей (ключей справочников) хранилища
+</summary>
+"""
+def test_equals_storage_manager_keys():
+    # Подготовка
+    manager = storage_manager()
+
+    # Действие
+    keys = manager.keys()
+
+    # Проверка
+    assert keys == ["range", "group", "nomenclature", "storage", "receipt"]
+

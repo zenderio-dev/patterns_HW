@@ -1,5 +1,6 @@
 from Src.Logics.settings_manager import settings_manager
 from Src.Core.validator import operation_exception
+from Src.Dtos.report_type_enum import report_type_enum
 
 """
 <summary>
@@ -203,3 +204,58 @@ def test_default_settings_manager_load_invalid_data(tmp_path):
     assert manager.settings is not None
     assert manager.settings.boss_name == ""
     assert manager.settings.first_start
+
+"""
+<summary>
+Формат ответа response_format загружается из settings.json (без учёта регистра)
+</summary>
+"""
+def test_equals_settings_manager_load_response_format(tmp_path):
+    # Подготовка
+    file_name = tmp_path / "settings.json"
+    file_name.write_text('{"response_format": "Markdown"}', encoding="utf-8")
+    manager = settings_manager()
+
+    # Действие
+    manager.load(str(file_name))
+
+    # Проверка
+    assert manager.is_loaded
+    assert manager.settings.response_format == report_type_enum.MARKDOWN
+
+"""
+<summary>
+Если в settings.json нет ключа response_format, формат ответа по умолчанию - TXT
+</summary>
+"""
+def test_default_settings_manager_load_without_response_format(tmp_path):
+    # Подготовка
+    file_name = tmp_path / "settings.json"
+    file_name.write_text('{"boss_name": "Иванов"}', encoding="utf-8")
+    manager = settings_manager()
+
+    # Действие
+    manager.load(str(file_name))
+
+    # Проверка
+    assert manager.settings.response_format == report_type_enum.TXT
+
+"""
+<summary>
+Неизвестный формат ответа в settings.json: загрузка не падает,
+используются настройки по умолчанию, признак is_loaded = False
+</summary>
+"""
+def test_default_settings_manager_load_invalid_response_format(tmp_path):
+    # Подготовка
+    file_name = tmp_path / "settings.json"
+    file_name.write_text('{"response_format": "PDF"}', encoding="utf-8")
+    manager = settings_manager()
+
+    # Действие
+    manager.load(str(file_name))
+
+    # Проверка
+    assert not manager.is_loaded
+    assert manager.settings.response_format == report_type_enum.TXT
+

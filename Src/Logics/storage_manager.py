@@ -1,4 +1,5 @@
 from Src.Core.abstract_manager import abstract_manager
+from Src.Core.validator import validator, operation_exception
 from Src.Logics.settings_manager import settings_manager
 from Src.Models.range_model import range_model
 from Src.Models.group_model import group_model
@@ -66,7 +67,7 @@ class storage_manager(abstract_manager):
 
         storage = storage_model.create("Основной склад", "г. Иркутск, ул. Ленина, 1")
 
-        # полуфабрикат («блюдо в блюде») - входит в сырники
+        # полуфабрикат ("блюдо в блюде") - входит в сырники
         dough = receipt_model.create("Творожное тесто", 4, 10)
         dough.add_item(receipt_item_model.create(cottage_cheese, gram, 400))
         dough.add_item(receipt_item_model.create(egg, piece, 1, unit_weight=50, waste=12))
@@ -99,6 +100,30 @@ class storage_manager(abstract_manager):
             self.receipt_key: [dough, receipt],
         }
         return True
+
+    """
+    Список типов сущностей (ключей справочников)
+    """
+    def keys(self) -> list:
+        return list(self.__data.keys())
+
+    """
+    Все модели справочника key
+    """
+    def get(self, key: str) -> list:
+        validator.validate(key, str)
+        if key not in self.__data:
+            raise operation_exception(f"Неизвестный справочник: {key}")
+        return self.__data[key]
+
+    """
+    Модель справочника key с уникальным кодом unique_code
+    """
+    def find(self, key: str, unique_code: str):
+        for item in self.get(key):
+            if item.unique_code == unique_code:
+                return item
+        raise operation_exception(f"Не найдена модель {key} с кодом {unique_code}")
 
     """
     Данные хранилища: ключ справочника -> список моделей
