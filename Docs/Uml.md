@@ -182,7 +182,7 @@ classDiagram
 
 ## Конвертеры
 
-`convert_factory` превращает любой объект в набор словарей по его структуре (например, для JSON). По типу значения поля фабрика выбирает конвертер: простые типы — `basic_convertor`, дата — `datetime_convertor`, ссылки на модели и списки — `reference_convertor`, который вложенные объекты снова отдаёт фабрике.
+Фабрика только подбирает конвертер по типу значения (по таблице "тип - конвертер", с учетом наследования): простые типы - `basic_convertor`, дата - `datetime_convertor`, модели, списки и словари - `reference_convertor`. `reference_convertor` формирует словарь по всем полям объекта: для каждого поля просит конвертер у фабрики, а ссылки разворачивает рекурсивно.
 
 ```mermaid
 classDiagram
@@ -202,21 +202,27 @@ classDiagram
     }
 
     class reference_convertor {
+        +factory
         +convert(source) dict
+    }
+
+    class abstract_convert_factory {
+        <<abstract>>
+        +create(value) abstract_convertor
     }
 
     class convert_factory {
         +create(value) abstract_convertor
-        +convert(source)
     }
 
     abstract_convertor <|-- basic_convertor : наследует
     abstract_convertor <|-- datetime_convertor : наследует
     abstract_convertor <|-- reference_convertor : наследует
-    convert_factory o-- basic_convertor : числа, строки
-    convert_factory o-- datetime_convertor : дата
-    convert_factory o-- reference_convertor : ссылки, списки
-    reference_convertor --> convert_factory : вложенные объекты
+    abstract_convert_factory <|-- convert_factory : наследует
+    convert_factory o-- basic_convertor : int, float, str, None
+    convert_factory o-- datetime_convertor : datetime
+    convert_factory o-- reference_convertor : модель, list, tuple, dict
+    reference_convertor --> abstract_convert_factory : подбор конвертера для полей
 
-    note for convert_factory "простое значение - как есть<br>дата - строка ISO<br>список - список<br>объект - словарь по полям"
+    note for reference_convertor "простое поле, дата - конвертер из фабрики<br>модель, словарь - вложенный словарь<br>список - список"
 ```
