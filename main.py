@@ -71,6 +71,22 @@ def get_entities():
     return flask.jsonify(storage_manager().keys())
 
 """
+Сформировать JSON-файл для скачивания по словарю данных
+"""
+def build_json(source: dict, name: str):
+    result = convert_factory().create(source).convert(source)
+    data = json.dumps(result, ensure_ascii=False, indent=4)
+    return flask.send_file(io.BytesIO(data.encode("utf-8")), mimetype="application/json",
+                           as_attachment=True, download_name=f"{name}.json")
+
+"""
+Все данные хранилища в одном JSON-файле
+"""
+@api.route("/api/json", methods=["GET"])
+def get_json_all():
+    return build_json(storage_manager().data, "storage")
+
+"""
 Все сущности указанного типа в формате JSON (файл для скачивания)
 """
 @api.route("/api/json/<entity>", methods=["GET"])
@@ -79,9 +95,7 @@ def get_json(entity: str):
         items = storage_manager().get(entity)
     except operation_exception as ex:
         flask.abort(404, str(ex))
-    data = json.dumps(convert_factory().convert(items), ensure_ascii=False, indent=4)
-    return flask.send_file(io.BytesIO(data.encode("utf-8")), mimetype="application/json",
-                           as_attachment=True, download_name=f"{entity}.json")
+    return build_json({entity: items}, entity)
 
 if __name__ == "__main__":
     api.run(host="0.0.0.0", port=8080)
