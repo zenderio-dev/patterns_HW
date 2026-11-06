@@ -1,4 +1,5 @@
 import io
+import json
 import flask
 import connexion
 from Src.Core.abstract_report import abstract_report
@@ -6,6 +7,7 @@ from Src.Core.validator import argument_exception, operation_exception
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_manager import storage_manager
 from Src.Logics.report_factory import report_factory
+from Src.Logics.convert_factory import convert_factory
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 api.app.json.ensure_ascii = False
@@ -67,6 +69,33 @@ def get_formats():
 @api.route("/api/entities", methods=["GET"])
 def get_entities():
     return flask.jsonify(storage_manager().keys())
+
+"""
+Сформировать JSON-файл для скачивания по словарю данных
+"""
+def build_json(source: dict, name: str):
+    result = convert_factory().create(source).convert(source)
+    data = json.dumps(result, ensure_ascii=False, indent=4)
+    return flask.send_file(io.BytesIO(data.encode("utf-8")), mimetype="application/json",
+                           as_attachment=True, download_name=f"{name}.json")
+
+"""
+Все данные хранилища в одном JSON-файле
+"""
+@api.route("/api/json", methods=["GET"])
+def get_json_all():
+    return build_json(storage_manager().data, "storage")
+
+"""
+Все сущности указанного типа в формате JSON (файл для скачивания)
+"""
+@api.route("/api/json/<entity>", methods=["GET"])
+def get_json(entity: str):
+    try:
+        items = storage_manager().get(entity)
+    except operation_exception as ex:
+        flask.abort(404, str(ex))
+    return build_json({entity: items}, entity)
 
 if __name__ == "__main__":
     api.run(host="0.0.0.0", port=8080)

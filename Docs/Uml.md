@@ -31,6 +31,7 @@ classDiagram
         +boss_name
         +account_name
         +first_start
+        +response_format
     }
 
     class company_model {
@@ -67,6 +68,9 @@ classDiagram
         <<singleton>>
         +load(force)
         +convert()
+        +get(key)
+        +find(key, unique_code)
+        +keys()
         +data
         +is_loaded
     }
@@ -174,4 +178,51 @@ classDiagram
 
     note for receipt_model "брутто = сумма брутто строк<br>нетто = сумма нетто строк<br>(рекурсивно через вложенные карты)"
     note for receipt_item_model "ингредиент: брутто = quantity × unit_weight, г<br>нетто = брутто × (100 − waste) / 100<br>полуфабрикат: брутто = quantity × receipt.brutto<br>нетто = quantity × receipt.netto"
+```
+
+## Конвертеры
+
+Фабрика только подбирает конвертер по типу значения (по таблице "тип - конвертер", с учетом наследования): простые типы - `basic_convertor`, дата - `datetime_convertor`, модели, списки и словари - `reference_convertor`. `reference_convertor` формирует словарь по всем полям объекта: для каждого поля просит конвертер у фабрики, а ссылки разворачивает рекурсивно.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class abstract_convertor {
+        <<abstract>>
+        +convert(source) dict
+    }
+
+    class basic_convertor {
+        +convert(source) dict
+    }
+
+    class datetime_convertor {
+        +convert(source) dict
+    }
+
+    class reference_convertor {
+        +factory
+        +convert(source) dict
+    }
+
+    class abstract_convert_factory {
+        <<abstract>>
+        +create(value) abstract_convertor
+    }
+
+    class convert_factory {
+        +create(value) abstract_convertor
+    }
+
+    abstract_convertor <|-- basic_convertor : наследует
+    abstract_convertor <|-- datetime_convertor : наследует
+    abstract_convertor <|-- reference_convertor : наследует
+    abstract_convert_factory <|-- convert_factory : наследует
+    convert_factory o-- basic_convertor : int, float, str, None
+    convert_factory o-- datetime_convertor : datetime
+    convert_factory o-- reference_convertor : модель, list, tuple, dict
+    reference_convertor --> abstract_convert_factory : подбор конвертера для полей
+
+    note for reference_convertor "простое поле, дата - конвертер из фабрики<br>модель, словарь - вложенный словарь<br>список - список"
 ```
