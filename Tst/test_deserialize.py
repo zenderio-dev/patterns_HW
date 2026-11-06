@@ -333,3 +333,38 @@ def test_raise_deserializer_deserialize_invalid_quantity(source_data, quantity):
     # Действие и проверка
     with pytest.raises(argument_exception):
         deserializer().deserialize(source, "receipt_item")
+
+
+"""
+<summary>
+Десериализатор читает JSON-файл, созданный существующей сериализацией хранилища
+</summary>
+"""
+def test_equals_deserializer_load_json_file(source_data, tmp_path):
+    # Подготовка
+    source = serialize(source_data)
+    file_name = tmp_path / "storage.json"
+    file_name.write_text(json.dumps(source, ensure_ascii=False), encoding="utf-8")
+
+    # Действие
+    loaded = deserializer().load(str(file_name))
+
+    # Проверка
+    assert serialize(loaded) == source
+
+
+"""
+<summary>
+Отсутствующий файл или некорректный текст JSON приводят к operation_exception
+</summary>
+"""
+@pytest.mark.parametrize("contents", [None, "не JSON"])
+def test_raise_deserializer_load_invalid_file(tmp_path, contents):
+    # Подготовка
+    file_name = tmp_path / "storage.json"
+    if contents is not None:
+        file_name.write_text(contents, encoding="utf-8")
+
+    # Действие и проверка
+    with pytest.raises(operation_exception):
+        deserializer().load(str(file_name))
