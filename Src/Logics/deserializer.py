@@ -1,7 +1,8 @@
+import json
 import math
 from Src.Core.abstract_model import abstract_model
 from Src.Core.abstract_model_factory import abstract_model_factory
-from Src.Core.validator import validator, argument_exception
+from Src.Core.validator import validator, argument_exception, operation_exception
 from Src.Logics.model_factory import model_factory
 
 
@@ -48,6 +49,17 @@ class deserializer:
     def factory(self) -> abstract_model_factory:
         return self.__factory
 
+    """
+    Прочитать JSON-файл и восстановить хранилище или модель указанного типа
+    """
+    def load(self, file_name: str, model_type: str = ""):
+        validator.validate(file_name, str)
+        try:
+            with open(file_name, encoding="utf-8") as file:
+                source = json.load(file)
+        except (OSError, UnicodeError, json.JSONDecodeError) as ex:
+            raise operation_exception(f"Не удалось прочитать JSON: {file_name}. {ex}") from ex
+        return self.deserialize(source, model_type)
 
     """
     Восстановить словарь справочников или отдельную модель.
