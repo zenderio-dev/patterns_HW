@@ -226,3 +226,42 @@ classDiagram
 
     note for reference_convertor "простое поле, дата - конвертер из фабрики<br>модель, словарь - вложенный словарь<br>список - список"
 ```
+
+## Десериализация
+
+`deserializer.load(file_name)` читает JSON-файл, а `deserialize(source, model_type)`
+восстанавливает модели из словаря. Для целого хранилища тип задается ключом
+справочника, для отдельной модели передается явно. Вложенные ссылки восстанавливаются
+рекурсивно, повторяющийся `unique_code` возвращает тот же загруженный объект.
+Фабрика создает модели, десериализатор заполняет их через свойства и методы.
+Брутто и нетто рассчитываются моделями по восстановленному составу.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class abstract_model_factory {
+        <<abstract>>
+        +create(model_type) abstract_model
+    }
+
+    class model_factory {
+        +create(model_type) abstract_model
+    }
+
+    class deserializer {
+        +factory
+        +load(file_name, model_type)
+        +deserialize(source, model_type)
+    }
+
+    class abstract_model {
+        +unique_code
+    }
+
+    abstract_model_factory <|-- model_factory : наследует
+    deserializer --> abstract_model_factory : создание моделей
+    model_factory ..> abstract_model : создает наследников
+
+    note for deserializer "вложенные объекты - рекурсивно<br>общие коды - общие ссылки<br>неизвестные типы и противоречащие данные - ошибка"
+```
