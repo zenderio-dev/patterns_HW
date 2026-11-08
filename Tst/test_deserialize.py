@@ -2,6 +2,7 @@ import copy
 import json
 import pytest
 from Src.Core.abstract_model_factory import abstract_model_factory
+from Src.Core.common import common
 from Src.Core.validator import argument_exception, operation_exception
 from Src.Logics.convert_factory import convert_factory
 from Src.Logics.deserializer import deserializer
@@ -368,3 +369,109 @@ def test_raise_deserializer_load_invalid_file(tmp_path, contents):
     # Действие и проверка
     with pytest.raises(operation_exception):
         deserializer().load(str(file_name))
+
+
+"""
+<summary>
+Модель восстанавливается из подготовленных полей с сохранением кода,
+вложенных ссылок и вычисляемых весов
+</summary>
+"""
+@pytest.mark.parametrize("key, model_class", [
+    ("group", group_model),
+    ("range", range_model),
+    ("nomenclature", nomenclature_model),
+    ("storage", storage_model),
+    ("receipt", receipt_model),
+    ("receipt_item", receipt_item_model),
+])
+@pytest.mark.integration
+def test_equals_model_from_dict(source_data, key, model_class):
+    # Подготовка
+    original = (source_data["receipt"][0].items[0] if key == "receipt_item"
+                else source_data[key][0])
+    fields = {name: getattr(original, name) for name in common.get_fields(original)}
+    fields = {name: list(value) if isinstance(value, tuple) else value
+              for name, value in fields.items()}
+
+    # Действие
+    loaded = model_class.from_dict(fields)
+
+    # Проверка
+    assert type(loaded) is model_class
+    assert loaded is not original
+    assert serialize(loaded) == serialize(original)
+    if key == "nomenclature":
+        assert loaded.group is original.group
+        assert loaded.range is original.range
+    if key == "receipt":
+        assert loaded.items == original.items
+        assert loaded.steps == original.steps
+
+
+
+"""
+<summary>
+Обязательная группа номенклатуры не принимает null и модель другого типа
+</summary>
+"""
+@pytest.mark.parametrize("group", [None, range_model.create_gram()])
+@pytest.mark.unit
+def test_raise_nomenclature_model_from_dict_invalid_group(group):
+    # Подготовка
+    source = {"unique_code": "flour-1", "name": "Мука", "group": group,
+              "range": range_model.create_gram()}
+
+    # Действие и проверка
+    with pytest.raises(argument_exception):
+        nomenclature_model.from_dict(source)
+
+
+
+"""
+<summary>
+Базовая единица грамма может быть null и остаётся пустой после восстановления
+</summary>
+"""
+@pytest.mark.unit
+def test_none_range_model_from_dict_base():
+    # Действие
+    loaded = range_model.from_dict({"unique_code": "gram-1", "name": "грамм",
+                                    "value": 1, "base": None})
+
+    # Проверка
+    assert loaded.base is None
+    assert loaded.unique_code == "gram-1"
+
+
+
+"""
+<summary>
+Единица измерения отклоняет неверный тип базовой единицы и логический коэффициент
+</summary>
+"""
+@pytest.mark.parametrize("field, value", [("base", 42), ("value", True)])
+@pytest.mark.unit
+def test_raise_range_model_from_dict_invalid_fields(field, value):
+    # Подготовка
+    source = {"unique_code": "gram-1", "name": "грамм", "value": 1, "base": None}
+    source[field] = value
+
+    # Действие и проверка
+    with pytest.raises(argument_exception):
+        range_model.from_dict(source)
+
+
+
+"""
+<summary>
+Отсутствующие код или наименование отклоняются проверками модели
+</summary>
+"""
+@pytest.mark.parametrize("source", [{"name": "Сырьё"}, {"unique_code": "group-1"},
+                                    {"unique_code": 42, "name": "Сырьё"}])
+@pytest.mark.unit
+def test_raise_group_model_from_dict_required_fields(source):
+    # Действие и проверка
+    with pytest.raises(argument_exception):
+        group_model.from_dict(source)
