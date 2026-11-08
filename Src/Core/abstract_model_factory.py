@@ -8,8 +8,8 @@ from Src.Core.abstract_model import abstract_model
 class abstract_model_factory(ABC):
 
     """
-    Создать модель указанного типа
+    Восстановить модель указанного типа из подготовленных полей
     """
     @abstractmethod
-    def create(self, model_type: str) -> abstract_model:
+    def create(self, model_type: str, source: dict) -> abstract_model:
         pass
