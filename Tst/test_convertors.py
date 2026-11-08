@@ -221,10 +221,11 @@ def test_equals_reference_convertor_convert():
     result = reference_convertor(convert_factory()).convert(sample)
 
     # Проверка
-    assert list(result.keys()) == ["catalog", "count", "created", "items", "name", "price", "reference", "unique_code"]
+    assert list(result.keys()) == ["catalog", "count", "created", "items", "name", "price", "reference", "unique_code", "model_type"]
     assert result["count"] == 5
     assert result["created"] == "2026-10-24T12:00:00"
-    assert result["reference"] == {"name": "Сырьё", "unique_code": sample.reference.unique_code}
+    assert result["reference"] == {"name": "Сырьё", "unique_code": sample.reference.unique_code,
+                                   "model_type": "group_model"}
     assert result["items"][0]["name"] == "грамм"
     assert result["catalog"]["group"][0]["name"] == "Упаковка"
 
@@ -356,3 +357,32 @@ def test_equals_convert_json():
 
     # Проверка
     assert json.loads(text) == result
+
+
+"""
+<summary>
+Сериализация добавляет имя класса каждой модели, включая вложенные единицы,
+группы, строки рецепта и полуфабрикаты. Словари коллекций метку не получают
+</summary>
+"""
+@pytest.mark.integration
+def test_equals_convert_model_type():
+    # Подготовка
+    source = {"receipt": [create_receipt()]}
+
+    # Действие
+    result = convert(source)
+    receipt = result["receipt"][0]
+    row = receipt["items"][1]
+
+    # Проверка
+    assert "model_type" not in result
+    assert receipt["model_type"] == "receipt_model"
+    assert row["model_type"] == "receipt_item_model"
+    assert row["nomenclature"]["model_type"] == "nomenclature_model"
+    assert row["nomenclature"]["group"]["model_type"] == "group_model"
+    assert row["range"]["model_type"] == "range_model"
+    assert receipt["items"][0]["receipt"]["model_type"] == "receipt_model"
+    kilogram = convert(range_model.create_kilogram())
+    assert kilogram["model_type"] == "range_model"
+    assert kilogram["base"]["model_type"] == "range_model"
