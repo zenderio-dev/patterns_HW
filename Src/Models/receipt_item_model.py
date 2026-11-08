@@ -1,3 +1,4 @@
+import math
 from Src.Core.abstract_model import abstract_model
 from Src.Core.validator import validator, argument_exception
 from Src.Models.nomenclature_model import nomenclature_model
@@ -16,12 +17,35 @@ class receipt_item_model(abstract_model):
     __waste: float = 0
 
     """
-    Проверить, что значение - число (bool не считается числом)
+    Восстановить строку с готовым ингредиентом или полуфабрикатом
+    """
+    @classmethod
+    def from_dict(cls, source: dict) -> 'receipt_item_model':
+        validator.validate(source, dict)
+        nomenclature = source.get("nomenclature")
+        receipt = source.get("receipt")
+        if receipt is None:
+            result = cls.create(nomenclature, source.get("range"), source.get("quantity"))
+        else:
+            if nomenclature is not None:
+                raise argument_exception("source", "Укажите ингредиент или полуфабрикат, а не оба сразу")
+            result = cls.create_from_receipt(receipt, source.get("quantity"))
+            if source.get("range") is not None:
+                result.range = source["range"]
+        result.unit_weight = source.get("unit_weight")
+        result.waste = source.get("waste")
+        result.unique_code = source.get("unique_code")
+        return result
+
+    """
+    Проверить конечное число (bool не считается числом)
     """
     @staticmethod
     def __validate_number(value) -> None:
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise argument_exception("value", "Значение должно быть числом")
+        if isinstance(value, float) and not math.isfinite(value):
+            raise argument_exception("value", "Значение должно быть конечным числом")
 
     """
     Ингредиент (номенклатура)
