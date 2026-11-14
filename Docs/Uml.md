@@ -182,7 +182,7 @@ classDiagram
 
 ## Конвертеры
 
-Фабрика только подбирает конвертер по типу значения (по таблице "тип - конвертер", с учетом наследования): простые типы - `basic_convertor`, дата - `datetime_convertor`, модели, списки и словари - `reference_convertor`. `reference_convertor` формирует словарь по всем полям объекта: для каждого поля просит конвертер у фабрики, а ссылки разворачивает рекурсивно.
+Фабрика только подбирает конвертер по типу значения (по таблице "тип - конвертер", с учетом наследования): простые типы - `basic_convertor`, дата - `datetime_convertor`, модели, списки и словари - `reference_convertor`. `reference_convertor` формирует словарь по всем полям объекта: для каждого поля просит конвертер у фабрики, а ссылки разворачивает рекурсивно. Каждая доменная модель получает метку `model_type` с именем класса; словари коллекций такую метку не получают.
 
 ```mermaid
 classDiagram
@@ -224,5 +224,77 @@ classDiagram
     convert_factory o-- reference_convertor : модель, list, tuple, dict
     reference_convertor --> abstract_convert_factory : подбор конвертера для полей
 
-    note for reference_convertor "простое поле, дата - конвертер из фабрики<br>модель, словарь - вложенный словарь<br>список - список"
+    note for reference_convertor "простое поле, дата - конвертер из фабрики<br>модель, словарь - вложенный словарь<br>список - список<br>модель получает model_type"
+```
+
+## Десериализация
+
+`deserializer.load(file_name)` читает JSON-файл, а `deserialize(source)`
+восстанавливает отдельную модель или словарь коллекций. Каждый объект содержит
+`model_type`, поэтому его тип не зависит от названия коллекции или поля.
+Загрузчик рекурсивно восстанавливает вложенные объекты; повторяющийся
+`unique_code` возвращает тот же загруженный экземпляр.
+
+При создании `model_factory` загружает модули из `Src/Models` и через рефлексию
+находит конкретные доменные классы с методом `from_dict()`. Фабрика выбирает класс
+по `model_type` и передает ему подготовленные поля. Модель создает себя через
+свои фабричные методы и сеттеры. Брутто и нетто рассчитываются по составу,
+значения этих полей из JSON не присваиваются.
+
+Пример выгрузки: [Json/storage.json](Json/storage.json). Его можно получить
+через `GET /api/json`; старые выгрузки без `model_type` нужно сформировать заново.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class abstract_model_factory {
+        <<abstract>>
+        +create(model_type, source) abstract_model
+    }
+
+    class model_factory {
+        +create(model_type, source) abstract_model
+    }
+
+    class deserializer {
+        +factory
+        +load(file_name)
+        +deserialize(source)
+    }
+
+    class abstract_model {
+        +unique_code
+    }
+
+    class entity_model {
+        +name
+    }
+
+    class receipt_model {
+        +from_dict(source)$
+        +add_item(item)
+        +add_step(step)
+        +brutto
+        +netto
+    }
+
+    class receipt_item_model {
+        +from_dict(source)$
+        +brutto
+        +netto
+    }
+
+    abstract_model_factory <|-- model_factory : наследует
+    deserializer --> abstract_model_factory : создание моделей
+    abstract_model <|-- entity_model : наследует
+    entity_model <|-- receipt_model : наследует
+    abstract_model <|-- receipt_item_model : наследует
+    model_factory ..> receipt_model : вызывает from_dict
+    model_factory ..> receipt_item_model : вызывает from_dict
+    receipt_model *-- receipt_item_model : строки
+
+    note for deserializer "вложенные объекты - рекурсивно<br>общие коды - общие ссылки<br>неизвестные типы и противоречащие данные - ошибка"
+    note for model_factory "загружает модули Src/Models<br>находит классы с from_dict через рефлексию<br>выбирает класс по model_type"
+    note for receipt_model "модели восстанавливаются через from_dict<br>поля проверяются самой моделью"
 ```

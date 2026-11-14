@@ -9,6 +9,16 @@ class storage_model(entity_model):
     __address:str = ""
 
     """
+    Восстановить склад из подготовленных полей
+    """
+    @classmethod
+    def from_dict(cls, source: dict) -> 'storage_model':
+        validator.validate(source, dict)
+        result = cls.create(source.get("name"), source.get("address"))
+        result.unique_code = source.get("unique_code")
+        return result
+
+    """
     Адрес
     """
     @property

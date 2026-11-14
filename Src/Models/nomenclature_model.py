@@ -10,6 +10,16 @@ class nomenclature_model(entity_model):
     __group: group_model = None
     __range: range_model = None
 
+    """
+    Восстановить номенклатуру с готовыми группой и единицей измерения
+    """
+    @classmethod
+    def from_dict(cls, source: dict) -> 'nomenclature_model':
+        validator.validate(source, dict)
+        result = cls.create(source.get("name"), source.get("group"), source.get("range"))
+        result.unique_code = source.get("unique_code")
+        return result
+
    
     """
     Группа номенклатуры
@@ -20,7 +30,7 @@ class nomenclature_model(entity_model):
 
     @group.setter
     def group(self, value: group_model):
-        validator.validate(value,entity_model )
+        validator.validate(value, group_model)
         self.__group = value    
 
     """

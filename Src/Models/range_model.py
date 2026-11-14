@@ -9,6 +9,19 @@ class range_model(entity_model):
     __base:'range_model' = None
 
     """
+    Восстановить единицу с уже загруженной базовой единицей
+    """
+    @classmethod
+    def from_dict(cls, source: dict) -> 'range_model':
+        validator.validate(source, dict)
+        result = cls()
+        result.name = source.get("name")
+        result.value = source.get("value")
+        result.base = source.get("base")
+        result.unique_code = source.get("unique_code")
+        return result
+
+    """
     Значение коэффициента пересчета
     """
     @property
@@ -18,7 +31,7 @@ class range_model(entity_model):
     @value.setter
     def value(self, value: int):
         validator.validate(value, int)
-        if value <= 0:
+        if isinstance(value, bool) or value <= 0:
              raise argument_exception("Некорректный аргумент!")
         self.__value = value
 
@@ -32,6 +45,8 @@ class range_model(entity_model):
     
     @base.setter
     def base(self, value):
+        if value is not None:
+            validator.validate(value, range_model)
         self.__base = value
 
 

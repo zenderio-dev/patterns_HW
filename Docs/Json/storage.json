@@ -1,0 +1,1091 @@
+{
+    "range": [
+        {
+            "base": null,
+            "name": "грамм",
+            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+            "value": 1,
+            "model_type": "range_model"
+        },
+        {
+            "base": {
+                "base": null,
+                "name": "грамм",
+                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                "value": 1,
+                "model_type": "range_model"
+            },
+            "name": "кг",
+            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+            "value": 1000,
+            "model_type": "range_model"
+        },
+        {
+            "base": null,
+            "name": "штука",
+            "unique_code": "79233900e9f840c48fe22aef20c59f03",
+            "value": 1,
+            "model_type": "range_model"
+        }
+    ],
+    "group": [
+        {
+            "name": "Сырьё",
+            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+            "model_type": "group_model"
+        },
+        {
+            "name": "Упаковка",
+            "unique_code": "9c556bdbae234a11bb8918b3222a0584",
+            "model_type": "group_model"
+        }
+    ],
+    "nomenclature": [
+        {
+            "group": {
+                "name": "Сырьё",
+                "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                "model_type": "group_model"
+            },
+            "name": "Пшеничная мука",
+            "range": {
+                "base": {
+                    "base": null,
+                    "name": "грамм",
+                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                    "value": 1,
+                    "model_type": "range_model"
+                },
+                "name": "кг",
+                "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                "value": 1000,
+                "model_type": "range_model"
+            },
+            "unique_code": "2fbe5d7455c54b7bb645221f2146ae86",
+            "model_type": "nomenclature_model"
+        },
+        {
+            "group": {
+                "name": "Сырьё",
+                "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                "model_type": "group_model"
+            },
+            "name": "Творог",
+            "range": {
+                "base": {
+                    "base": null,
+                    "name": "грамм",
+                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                    "value": 1,
+                    "model_type": "range_model"
+                },
+                "name": "кг",
+                "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                "value": 1000,
+                "model_type": "range_model"
+            },
+            "unique_code": "31a3121784d74646a220290f0679613a",
+            "model_type": "nomenclature_model"
+        },
+        {
+            "group": {
+                "name": "Сырьё",
+                "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                "model_type": "group_model"
+            },
+            "name": "Сахар",
+            "range": {
+                "base": {
+                    "base": null,
+                    "name": "грамм",
+                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                    "value": 1,
+                    "model_type": "range_model"
+                },
+                "name": "кг",
+                "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                "value": 1000,
+                "model_type": "range_model"
+            },
+            "unique_code": "0a593c2c685c4b64b9729f6b7451569d",
+            "model_type": "nomenclature_model"
+        },
+        {
+            "group": {
+                "name": "Сырьё",
+                "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                "model_type": "group_model"
+            },
+            "name": "Яйца",
+            "range": {
+                "base": null,
+                "name": "штука",
+                "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                "value": 1,
+                "model_type": "range_model"
+            },
+            "unique_code": "72fbb2e72a504abc8521676cd89f6518",
+            "model_type": "nomenclature_model"
+        },
+        {
+            "group": {
+                "name": "Сырьё",
+                "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                "model_type": "group_model"
+            },
+            "name": "Растительное масло",
+            "range": {
+                "base": {
+                    "base": null,
+                    "name": "грамм",
+                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                    "value": 1,
+                    "model_type": "range_model"
+                },
+                "name": "кг",
+                "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                "value": 1000,
+                "model_type": "range_model"
+            },
+            "unique_code": "4c7b39e489844c78914e639c74e1180c",
+            "model_type": "nomenclature_model"
+        },
+        {
+            "group": {
+                "name": "Упаковка",
+                "unique_code": "9c556bdbae234a11bb8918b3222a0584",
+                "model_type": "group_model"
+            },
+            "name": "Контейнер для доставки",
+            "range": {
+                "base": null,
+                "name": "штука",
+                "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                "value": 1,
+                "model_type": "range_model"
+            },
+            "unique_code": "e9ce6ef88aee46739d0d818569831d44",
+            "model_type": "nomenclature_model"
+        }
+    ],
+    "storage": [
+        {
+            "address": "г. Иркутск, ул. Ленина, 1",
+            "name": "Основной склад",
+            "unique_code": "ee4424def73f4448956c80a68826cd8d",
+            "model_type": "storage_model"
+        }
+    ],
+    "receipt": [
+        {
+            "brutto": 550,
+            "cooking_time": 10,
+            "items": [
+                {
+                    "brutto": 400,
+                    "component": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Творог",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "31a3121784d74646a220290f0679613a",
+                        "model_type": "nomenclature_model"
+                    },
+                    "netto": 400.0,
+                    "nomenclature": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Творог",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "31a3121784d74646a220290f0679613a",
+                        "model_type": "nomenclature_model"
+                    },
+                    "quantity": 400,
+                    "range": {
+                        "base": null,
+                        "name": "грамм",
+                        "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                        "value": 1,
+                        "model_type": "range_model"
+                    },
+                    "receipt": null,
+                    "unique_code": "4696c59e8e2341d2bc3a976675a234fe",
+                    "unit_weight": 1,
+                    "waste": 0,
+                    "model_type": "receipt_item_model"
+                },
+                {
+                    "brutto": 50,
+                    "component": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Яйца",
+                        "range": {
+                            "base": null,
+                            "name": "штука",
+                            "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                            "value": 1,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "72fbb2e72a504abc8521676cd89f6518",
+                        "model_type": "nomenclature_model"
+                    },
+                    "netto": 44.0,
+                    "nomenclature": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Яйца",
+                        "range": {
+                            "base": null,
+                            "name": "штука",
+                            "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                            "value": 1,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "72fbb2e72a504abc8521676cd89f6518",
+                        "model_type": "nomenclature_model"
+                    },
+                    "quantity": 1,
+                    "range": {
+                        "base": null,
+                        "name": "штука",
+                        "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                        "value": 1,
+                        "model_type": "range_model"
+                    },
+                    "receipt": null,
+                    "unique_code": "f71b9e845ec548cf940f5db565d08ead",
+                    "unit_weight": 50,
+                    "waste": 12,
+                    "model_type": "receipt_item_model"
+                },
+                {
+                    "brutto": 60,
+                    "component": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Пшеничная мука",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "2fbe5d7455c54b7bb645221f2146ae86",
+                        "model_type": "nomenclature_model"
+                    },
+                    "netto": 60.0,
+                    "nomenclature": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Пшеничная мука",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "2fbe5d7455c54b7bb645221f2146ae86",
+                        "model_type": "nomenclature_model"
+                    },
+                    "quantity": 60,
+                    "range": {
+                        "base": null,
+                        "name": "грамм",
+                        "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                        "value": 1,
+                        "model_type": "range_model"
+                    },
+                    "receipt": null,
+                    "unique_code": "1c454fe2777e4cfab74948a859ccc08f",
+                    "unit_weight": 1,
+                    "waste": 0,
+                    "model_type": "receipt_item_model"
+                },
+                {
+                    "brutto": 40,
+                    "component": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Сахар",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "0a593c2c685c4b64b9729f6b7451569d",
+                        "model_type": "nomenclature_model"
+                    },
+                    "netto": 40.0,
+                    "nomenclature": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Сахар",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "0a593c2c685c4b64b9729f6b7451569d",
+                        "model_type": "nomenclature_model"
+                    },
+                    "quantity": 40,
+                    "range": {
+                        "base": null,
+                        "name": "грамм",
+                        "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                        "value": 1,
+                        "model_type": "range_model"
+                    },
+                    "receipt": null,
+                    "unique_code": "4367a619360a481693af80667affb33b",
+                    "unit_weight": 1,
+                    "waste": 0,
+                    "model_type": "receipt_item_model"
+                }
+            ],
+            "name": "Творожное тесто",
+            "netto": 544.0,
+            "portions": 4,
+            "steps": [
+                "Разомните творог вилкой до однородности.",
+                "Добавьте яйцо и сахар, перемешайте.",
+                "Всыпьте муку и замесите мягкое тесто."
+            ],
+            "unique_code": "8c3fe9d170054592abc1072ee4b6c179",
+            "model_type": "receipt_model"
+        },
+        {
+            "brutto": 585,
+            "cooking_time": 30,
+            "items": [
+                {
+                    "brutto": 550,
+                    "component": {
+                        "brutto": 550,
+                        "cooking_time": 10,
+                        "items": [
+                            {
+                                "brutto": 400,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Творог",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "31a3121784d74646a220290f0679613a",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 400.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Творог",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "31a3121784d74646a220290f0679613a",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 400,
+                                "range": {
+                                    "base": null,
+                                    "name": "грамм",
+                                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "4696c59e8e2341d2bc3a976675a234fe",
+                                "unit_weight": 1,
+                                "waste": 0,
+                                "model_type": "receipt_item_model"
+                            },
+                            {
+                                "brutto": 50,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Яйца",
+                                    "range": {
+                                        "base": null,
+                                        "name": "штука",
+                                        "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                                        "value": 1,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "72fbb2e72a504abc8521676cd89f6518",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 44.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Яйца",
+                                    "range": {
+                                        "base": null,
+                                        "name": "штука",
+                                        "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                                        "value": 1,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "72fbb2e72a504abc8521676cd89f6518",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 1,
+                                "range": {
+                                    "base": null,
+                                    "name": "штука",
+                                    "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "f71b9e845ec548cf940f5db565d08ead",
+                                "unit_weight": 50,
+                                "waste": 12,
+                                "model_type": "receipt_item_model"
+                            },
+                            {
+                                "brutto": 60,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Пшеничная мука",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "2fbe5d7455c54b7bb645221f2146ae86",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 60.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Пшеничная мука",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "2fbe5d7455c54b7bb645221f2146ae86",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 60,
+                                "range": {
+                                    "base": null,
+                                    "name": "грамм",
+                                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "1c454fe2777e4cfab74948a859ccc08f",
+                                "unit_weight": 1,
+                                "waste": 0,
+                                "model_type": "receipt_item_model"
+                            },
+                            {
+                                "brutto": 40,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Сахар",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "0a593c2c685c4b64b9729f6b7451569d",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 40.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Сахар",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "0a593c2c685c4b64b9729f6b7451569d",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 40,
+                                "range": {
+                                    "base": null,
+                                    "name": "грамм",
+                                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "4367a619360a481693af80667affb33b",
+                                "unit_weight": 1,
+                                "waste": 0,
+                                "model_type": "receipt_item_model"
+                            }
+                        ],
+                        "name": "Творожное тесто",
+                        "netto": 544.0,
+                        "portions": 4,
+                        "steps": [
+                            "Разомните творог вилкой до однородности.",
+                            "Добавьте яйцо и сахар, перемешайте.",
+                            "Всыпьте муку и замесите мягкое тесто."
+                        ],
+                        "unique_code": "8c3fe9d170054592abc1072ee4b6c179",
+                        "model_type": "receipt_model"
+                    },
+                    "netto": 544.0,
+                    "nomenclature": null,
+                    "quantity": 1,
+                    "range": null,
+                    "receipt": {
+                        "brutto": 550,
+                        "cooking_time": 10,
+                        "items": [
+                            {
+                                "brutto": 400,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Творог",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "31a3121784d74646a220290f0679613a",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 400.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Творог",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "31a3121784d74646a220290f0679613a",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 400,
+                                "range": {
+                                    "base": null,
+                                    "name": "грамм",
+                                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "4696c59e8e2341d2bc3a976675a234fe",
+                                "unit_weight": 1,
+                                "waste": 0,
+                                "model_type": "receipt_item_model"
+                            },
+                            {
+                                "brutto": 50,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Яйца",
+                                    "range": {
+                                        "base": null,
+                                        "name": "штука",
+                                        "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                                        "value": 1,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "72fbb2e72a504abc8521676cd89f6518",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 44.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Яйца",
+                                    "range": {
+                                        "base": null,
+                                        "name": "штука",
+                                        "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                                        "value": 1,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "72fbb2e72a504abc8521676cd89f6518",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 1,
+                                "range": {
+                                    "base": null,
+                                    "name": "штука",
+                                    "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "f71b9e845ec548cf940f5db565d08ead",
+                                "unit_weight": 50,
+                                "waste": 12,
+                                "model_type": "receipt_item_model"
+                            },
+                            {
+                                "brutto": 60,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Пшеничная мука",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "2fbe5d7455c54b7bb645221f2146ae86",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 60.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Пшеничная мука",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "2fbe5d7455c54b7bb645221f2146ae86",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 60,
+                                "range": {
+                                    "base": null,
+                                    "name": "грамм",
+                                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "1c454fe2777e4cfab74948a859ccc08f",
+                                "unit_weight": 1,
+                                "waste": 0,
+                                "model_type": "receipt_item_model"
+                            },
+                            {
+                                "brutto": 40,
+                                "component": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Сахар",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "0a593c2c685c4b64b9729f6b7451569d",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "netto": 40.0,
+                                "nomenclature": {
+                                    "group": {
+                                        "name": "Сырьё",
+                                        "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                                        "model_type": "group_model"
+                                    },
+                                    "name": "Сахар",
+                                    "range": {
+                                        "base": {
+                                            "base": null,
+                                            "name": "грамм",
+                                            "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                            "value": 1,
+                                            "model_type": "range_model"
+                                        },
+                                        "name": "кг",
+                                        "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                                        "value": 1000,
+                                        "model_type": "range_model"
+                                    },
+                                    "unique_code": "0a593c2c685c4b64b9729f6b7451569d",
+                                    "model_type": "nomenclature_model"
+                                },
+                                "quantity": 40,
+                                "range": {
+                                    "base": null,
+                                    "name": "грамм",
+                                    "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                    "value": 1,
+                                    "model_type": "range_model"
+                                },
+                                "receipt": null,
+                                "unique_code": "4367a619360a481693af80667affb33b",
+                                "unit_weight": 1,
+                                "waste": 0,
+                                "model_type": "receipt_item_model"
+                            }
+                        ],
+                        "name": "Творожное тесто",
+                        "netto": 544.0,
+                        "portions": 4,
+                        "steps": [
+                            "Разомните творог вилкой до однородности.",
+                            "Добавьте яйцо и сахар, перемешайте.",
+                            "Всыпьте муку и замесите мягкое тесто."
+                        ],
+                        "unique_code": "8c3fe9d170054592abc1072ee4b6c179",
+                        "model_type": "receipt_model"
+                    },
+                    "unique_code": "bf10288008be4fc2855faa2cd44b58cc",
+                    "unit_weight": 1,
+                    "waste": 0,
+                    "model_type": "receipt_item_model"
+                },
+                {
+                    "brutto": 20,
+                    "component": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Растительное масло",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "4c7b39e489844c78914e639c74e1180c",
+                        "model_type": "nomenclature_model"
+                    },
+                    "netto": 20.0,
+                    "nomenclature": {
+                        "group": {
+                            "name": "Сырьё",
+                            "unique_code": "ed90308a12d24207a0a9598534c81e09",
+                            "model_type": "group_model"
+                        },
+                        "name": "Растительное масло",
+                        "range": {
+                            "base": {
+                                "base": null,
+                                "name": "грамм",
+                                "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                                "value": 1,
+                                "model_type": "range_model"
+                            },
+                            "name": "кг",
+                            "unique_code": "1b6af464f36b4d86a283af2fa2618608",
+                            "value": 1000,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "4c7b39e489844c78914e639c74e1180c",
+                        "model_type": "nomenclature_model"
+                    },
+                    "quantity": 20,
+                    "range": {
+                        "base": null,
+                        "name": "грамм",
+                        "unique_code": "d12290980b17483e961c4c85b5210ec8",
+                        "value": 1,
+                        "model_type": "range_model"
+                    },
+                    "receipt": null,
+                    "unique_code": "d7176187436340ffb38d1226f17ada1f",
+                    "unit_weight": 1,
+                    "waste": 0,
+                    "model_type": "receipt_item_model"
+                },
+                {
+                    "brutto": 15,
+                    "component": {
+                        "group": {
+                            "name": "Упаковка",
+                            "unique_code": "9c556bdbae234a11bb8918b3222a0584",
+                            "model_type": "group_model"
+                        },
+                        "name": "Контейнер для доставки",
+                        "range": {
+                            "base": null,
+                            "name": "штука",
+                            "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                            "value": 1,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "e9ce6ef88aee46739d0d818569831d44",
+                        "model_type": "nomenclature_model"
+                    },
+                    "netto": 15.0,
+                    "nomenclature": {
+                        "group": {
+                            "name": "Упаковка",
+                            "unique_code": "9c556bdbae234a11bb8918b3222a0584",
+                            "model_type": "group_model"
+                        },
+                        "name": "Контейнер для доставки",
+                        "range": {
+                            "base": null,
+                            "name": "штука",
+                            "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                            "value": 1,
+                            "model_type": "range_model"
+                        },
+                        "unique_code": "e9ce6ef88aee46739d0d818569831d44",
+                        "model_type": "nomenclature_model"
+                    },
+                    "quantity": 1,
+                    "range": {
+                        "base": null,
+                        "name": "штука",
+                        "unique_code": "79233900e9f840c48fe22aef20c59f03",
+                        "value": 1,
+                        "model_type": "range_model"
+                    },
+                    "receipt": null,
+                    "unique_code": "f7282b2ea7ba44fd8edf2bdf827207ba",
+                    "unit_weight": 15,
+                    "waste": 0,
+                    "model_type": "receipt_item_model"
+                }
+            ],
+            "name": "Сырники",
+            "netto": 579.0,
+            "portions": 4,
+            "steps": [
+                "Приготовьте творожное тесто.",
+                "Сформируйте 8 сырников и обваляйте их в муке.",
+                "Обжарьте на масле по 3-4 минуты с каждой стороны до золотистой корочки.",
+                "Для доставки уложите сырники в контейнер и закройте крышкой."
+            ],
+            "unique_code": "4bbc23bd9fd740a2a62b39ebe2f4ff60",
+            "model_type": "receipt_model"
+        }
+    ]
+}

@@ -1,5 +1,6 @@
 from Src.Core.abstract_convertor import abstract_convertor
 from Src.Core.abstract_convert_factory import abstract_convert_factory
+from Src.Core.abstract_model import abstract_model
 from Src.Core.common import common
 from Src.Core.validator import validator, argument_exception
 
@@ -49,6 +50,8 @@ class reference_convertor(abstract_convertor):
                 if convertor not in converted:
                     converted[convertor] = convertor.convert(source)
                 result[field] = converted[convertor][field]
+        if isinstance(source, abstract_model):
+            result["model_type"] = type(source).__name__
         return result
 
     """

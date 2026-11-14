@@ -24,6 +24,24 @@ class receipt_model(entity_model):
         self.__steps = []
 
     """
+    Восстановить карту, добавляя готовые строки и шаги обычными методами
+    """
+    @classmethod
+    def from_dict(cls, source: dict) -> 'receipt_model':
+        validator.validate(source, dict)
+        result = cls.create(source.get("name"), source.get("portions"), source.get("cooking_time"))
+        result.unique_code = source.get("unique_code")
+        items = source.get("items")
+        steps = source.get("steps")
+        validator.validate(items, list)
+        validator.validate(steps, list)
+        for item in items:
+            result.add_item(item)
+        for step in steps:
+            result.add_step(step)
+        return result
+
+    """
     Количество порций (выход)
     """
     @property
