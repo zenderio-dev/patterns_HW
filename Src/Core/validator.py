@@ -10,6 +10,10 @@ class argument_exception(Exception):
 """  
 class operation_exception(Exception):
     pass    
+
+"""Конфликт при изменении хранилища."""
+class conflict_exception(operation_exception):
+    pass
     
 
 """

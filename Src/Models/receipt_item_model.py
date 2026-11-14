@@ -16,6 +16,10 @@ class receipt_item_model(abstract_model):
     __unit_weight: float = None
     __waste: float = 0
 
+    """Компонент строки и единица измерения."""
+    def references(self) -> tuple:
+        return tuple(model for model in (self.component, self.range) if model is not None)
+
     """
     Восстановить строку с готовым ингредиентом или полуфабрикатом
     """
@@ -32,8 +36,9 @@ class receipt_item_model(abstract_model):
             result = cls.create_from_receipt(receipt, source.get("quantity"))
             if source.get("range") is not None:
                 result.range = source["range"]
-        result.unit_weight = source.get("unit_weight")
-        result.waste = source.get("waste")
+        if source.get("unit_weight") is not None:
+            result.unit_weight = source["unit_weight"]
+        result.waste = source.get("waste", 0)
         result.unique_code = source.get("unique_code")
         return result
 

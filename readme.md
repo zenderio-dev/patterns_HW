@@ -80,6 +80,15 @@ class warehouse(abstract_model):
 - Swagger
 - HTML, JavaScript
 
+## Запуск API
+
+```shell
+python -m pip install -r requirements.txt
+python main.py
+```
+
+Swagger UI доступен по адресу [localhost:8080/ui/](http://localhost:8080/ui/).
+
 ## Требования к оборудованию
 
 - ОС Linux

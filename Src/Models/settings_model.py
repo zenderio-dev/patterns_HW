@@ -18,6 +18,21 @@ class settings_model(abstract_model):
     """Формат ответа"""
     _response_format:report_type_enum = report_type_enum.TXT
 
+    """Восстановить настройки и применить значения по умолчанию."""
+    @classmethod
+    def from_dict(cls, source: dict) -> 'settings_model':
+        result = cls()
+        for field, value in source.items():
+            if not isinstance(getattr(cls, field, None), property):
+                continue
+            if field == "response_format":
+                validator.validate(value, str)
+                if value.upper() not in report_type_enum.__members__:
+                    raise argument_exception("response_format", "Неизвестный формат отчёта")
+                value = report_type_enum[value.upper()]
+            setattr(result, field, value)
+        return result
+
 
     """
     Наименование организации

@@ -15,6 +15,10 @@ class receipt_model(entity_model):
     __items: list = None
     __steps: list = None
 
+    """Вложенные строки технологической карты."""
+    def references(self) -> tuple:
+        return self.items
+
     """
     Создать пустую технологическую карту
     """

@@ -10,6 +10,16 @@ class company_model(entity_model):
     __account:int = 0
     __ownership:str = ""
 
+    """Восстановить организацию из полей настроек."""
+    @classmethod
+    def from_dict(cls, source: dict) -> 'company_model':
+        result = cls()
+        for field, value in source.items():
+            if not isinstance(getattr(cls, field, None), property):
+                continue
+            setattr(result, field, value)
+        return result
+
     # ИНН : 12 симв
     # Счет 11 симв
     # Корреспондентский счет 11 симв

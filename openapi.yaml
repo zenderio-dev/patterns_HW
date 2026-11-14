@@ -1,0 +1,229 @@
+openapi: 3.0.3
+info:
+  title: Patterns HW API
+  version: 1.0.0
+paths:
+  /api/report/{format}/{entity}/{code}:
+    parameters:
+      - $ref: '#/components/parameters/format'
+      - $ref: '#/components/parameters/entity'
+      - $ref: '#/components/parameters/code'
+    get:
+      operationId: get_report
+      responses:
+        '200':
+          $ref: '#/components/responses/Report'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/report/{entity}/{code}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - $ref: '#/components/parameters/code'
+    get:
+      operationId: get_default_report
+      responses:
+        '200':
+          $ref: '#/components/responses/Report'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/list/{entity}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+    get:
+      operationId: get_list
+      responses:
+        '200':
+          $ref: '#/components/responses/EntityList'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/formats:
+    get:
+      operationId: get_formats
+      responses:
+        '200':
+          $ref: '#/components/responses/Formats'
+  /api/entities:
+    get:
+      operationId: get_entities
+      responses:
+        '200':
+          $ref: '#/components/responses/Catalogs'
+  /api/json:
+    get:
+      operationId: get_json_all
+      responses:
+        '200':
+          $ref: '#/components/responses/Download'
+  /api/json/{entity}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+    get:
+      operationId: get_json
+      responses:
+        '200':
+          $ref: '#/components/responses/Download'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/entities/{entity}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+    get:
+      operationId: list_entities
+      responses:
+        '200':
+          $ref: '#/components/responses/EntityList'
+        '404':
+          $ref: '#/components/responses/Error404'
+    post:
+      operationId: create_entity
+      requestBody:
+        $ref: '#/components/requestBodies/EntityData'
+      responses:
+        '201':
+          $ref: '#/components/responses/Entity'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+  /api/entities/{entity}/{code}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - $ref: '#/components/parameters/code'
+    get:
+      operationId: get_entity
+      responses:
+        '200':
+          $ref: '#/components/responses/Entity'
+        '404':
+          $ref: '#/components/responses/Error404'
+    patch:
+      operationId: update_entity
+      requestBody:
+        $ref: '#/components/requestBodies/EntityData'
+      responses:
+        '200':
+          $ref: '#/components/responses/Entity'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+    delete:
+      operationId: delete_entity
+      responses:
+        '204':
+          $ref: '#/components/responses/Deleted'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+components:
+  parameters:
+    entity:
+      name: entity
+      in: path
+      required: true
+      schema:
+        type: string
+    code:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+    format:
+      name: format
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBodies:
+    EntityData:
+      required: true
+      description: Поля модели. Ссылки передаются объектом с unique_code. При создании код можно пропустить.
+      content:
+        application/json:
+          schema: {type: object}
+          examples:
+            group:
+              summary: Группа
+              value: {name: Сырьё}
+            range:
+              summary: Единица измерения
+              value: {name: грамм, value: 1}
+            nomenclature:
+              summary: Номенклатура
+              value: {name: Мука, group: {unique_code: group-code}, range: {unique_code: range-code}}
+            storage:
+              summary: Склад
+              value: {name: Основной склад, address: Иркутск}
+            receipt:
+              summary: Рецепт
+              value: {name: Сырники, portions: 4, cooking_time: 30, items: [], steps: []}
+  responses:
+    Report:
+      description: Отчёт. CSV и Markdown скачиваются как файлы.
+      content:
+        text/plain:
+          schema: {type: string}
+        text/html:
+          schema: {type: string}
+        application/xml:
+          schema: {type: string}
+        text/csv:
+          schema: {type: string, format: binary}
+        text/markdown:
+          schema: {type: string, format: binary}
+    EntityList:
+      description: Коды и названия сущностей
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                code: {type: string}
+                name: {type: string}
+    Formats:
+      description: Поддерживаемые форматы
+      content:
+        application/json:
+          schema:
+            type: array
+            items: {type: string, enum: [TXT, CSV, MARKDOWN, XML, HTML]}
+    Catalogs:
+      description: Справочники хранилища
+      content:
+        application/json:
+          schema:
+            type: array
+            items: {type: string, enum: [range, group, nomenclature, storage, receipt]}
+    Download:
+      description: JSON-файл
+      content:
+        application/json:
+          schema: {type: string, format: binary}
+    Entity:
+      description: Данные сущности
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              unique_code: {type: string}
+              model_type: {type: string}
+              name: {type: string}
+    Deleted:
+      description: Сущность удалена
+    Error400:
+      description: Некорректные данные
+    Error404:
+      description: Сущность или справочник отсутствует
+    Error409:
+      description: Дубликат кода, циклическая ссылка или используемая сущность

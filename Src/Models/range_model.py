@@ -8,6 +8,10 @@ class range_model(entity_model):
     __value:int = 1
     __base:'range_model' = None
 
+    """Базовая единица, если она задана."""
+    def references(self) -> tuple:
+        return (self.base,) if self.base is not None else ()
+
     """
     Восстановить единицу с уже загруженной базовой единицей
     """
