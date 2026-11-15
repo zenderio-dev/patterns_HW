@@ -4,6 +4,7 @@ from Src.Core.abstract_model import abstract_model
 from Src.Core.abstract_model_factory import abstract_model_factory
 from Src.Core.validator import validator, argument_exception, operation_exception
 from Src.Logics.model_factory import model_factory
+from Src.Models.settings_model import settings_model
 
 
 """
@@ -43,7 +44,7 @@ class deserializer:
             raise operation_exception(f"Не удалось прочитать JSON: {file_name}. {ex}") from ex
 
     """
-    Восстановить модель по model_type или словарь коллекций моделей
+    Восстановить модель, плоские настройки или словарь коллекций моделей
     """
     def deserialize(self, source: dict, references: dict = None):
         validator.validate(source, dict)
@@ -51,6 +52,8 @@ class deserializer:
         active = set()
         if "model_type" in source:
             return self.__restore(source, models, active, references)
+        if settings_model.is_flat(source):
+            return self.__factory.create("settings_model", settings_model.flat_fields(source))
 
         result = {}
         for key, items in source.items():

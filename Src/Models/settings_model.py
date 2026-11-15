@@ -18,6 +18,27 @@ class settings_model(abstract_model):
     """Формат ответа"""
     _response_format:report_type_enum = report_type_enum.TXT
 
+    """Определить плоский формат файла настроек."""
+    @classmethod
+    def is_flat(cls, source: dict) -> bool:
+        return not source or any(
+            field.startswith("company_") or isinstance(getattr(cls, field, None), property)
+            for field in source if isinstance(field, str)
+        )
+
+    """Подготовить поля модели и карточку организации из плоских настроек."""
+    @classmethod
+    def flat_fields(cls, source: dict) -> dict:
+        prefix = "company_"
+        company_fields = {field[len(prefix):]: value for field, value in source.items()
+                          if isinstance(field, str) and field.startswith(prefix)
+                          and field != "company_unique_code"}
+        fields = {field: value for field, value in source.items()
+                  if isinstance(field, str) and field not in ("company", "unique_code")
+                  and isinstance(getattr(cls, field, None), property)}
+        fields["company"] = company_model.from_dict(company_fields)
+        return fields
+
     """Восстановить настройки и применить значения по умолчанию."""
     @classmethod
     def from_dict(cls, source: dict) -> 'settings_model':

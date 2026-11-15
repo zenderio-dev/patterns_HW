@@ -10,6 +10,7 @@ from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_manager import storage_manager
 from Src.Logics.report_factory import report_factory
 from Src.Logics.convert_factory import convert_factory
+from Src.Logics.entity_service import entity_service
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 api.app.json.ensure_ascii = False
@@ -93,7 +94,7 @@ def get_json(entity: str):
     return build_json({entity: items}, entity)
 
 
-"""Вызвать операцию хранилища и преобразовать доменные ошибки в HTTP-ответ."""
+"""Вызвать операцию и преобразовать доменные ошибки в HTTP-ответ."""
 def run_entity_operation(operation, *args):
     try:
         return operation(*args)
@@ -117,17 +118,17 @@ def get_entity(entity: str, code: str):
 
 """Создать сущность."""
 def create_entity(entity: str, body: dict):
-    return entity_data(run_entity_operation(storage_manager().create, entity, body)), 201
+    return entity_data(run_entity_operation(entity_service(storage_manager()).create, entity, body)), 201
 
 
 """Изменить переданные поля сущности."""
 def update_entity(entity: str, code: str, body: dict):
-    return entity_data(run_entity_operation(storage_manager().update, entity, code, body))
+    return entity_data(run_entity_operation(entity_service(storage_manager()).update, entity, code, body))
 
 
 """Удалить сущность по коду."""
 def delete_entity(entity: str, code: str):
-    run_entity_operation(storage_manager().delete, entity, code)
+    run_entity_operation(entity_service(storage_manager()).delete, entity, code)
     return None, 204
 
 

@@ -2,7 +2,6 @@ from Src.Core.abstract_manager import abstract_manager
 from Src.Core.validator import validator, argument_exception
 from Src.Logics.deserializer import deserializer
 from Src.Models.settings_model import settings_model
-from Src.Models.company_model import company_model
 
 """
 Менеджер настроек (singleton). Загружает настройки приложения из JSON-файла
@@ -44,17 +43,8 @@ class settings_manager(abstract_manager):
     """
     def convert(self) -> bool:
         try:
-            validator.validate(self.__data, dict)
-            company = {field[8:]: value for field, value in self.__data.items()
-                       if field.startswith("company_") and field[8:] != "unique_code"
-                       and isinstance(getattr(company_model, field[8:], None), property)}
-            fields = {field: value for field, value in self.__data.items()
-                      if field not in ("company", "unique_code")
-                      and isinstance(getattr(settings_model, field, None), property)}
-            fields.update(model_type="settings_model", unique_code=settings_model().unique_code)
-            fields["company"] = {**company, "model_type": "company_model",
-                                 "unique_code": company_model().unique_code}
-            self.__settings = deserializer().deserialize(fields)
+            self.__settings = deserializer().deserialize(self.__data)
+            validator.validate(self.__settings, settings_model)
         except argument_exception:
             self.__settings = settings_model()
             return False
