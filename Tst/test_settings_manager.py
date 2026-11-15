@@ -1,6 +1,23 @@
 from Src.Logics.settings_manager import settings_manager
+from Src.Logics.deserializer import deserializer
 from Src.Core.validator import operation_exception
 from Src.Dtos.report_type_enum import report_type_enum
+
+"""
+<summary>
+Общий десериализатор принимает плоские настройки без метаданных,
+восстанавливает организацию и сохраняет значения отсутствующих полей.
+</summary>
+"""
+def test_equals_deserializer_deserialize_flat_settings():
+    source = {"company_name": "Ромашка", "company_inn": 380100000000,
+              "response_format": "Markdown"}
+    settings = deserializer().deserialize(source)
+
+    assert settings.company.name == "Ромашка"
+    assert settings.company.inn == 380100000000
+    assert settings.response_format == report_type_enum.MARKDOWN
+    assert settings.first_start is True
 
 """
 <summary>
