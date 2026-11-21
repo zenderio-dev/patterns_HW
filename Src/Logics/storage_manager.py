@@ -1,12 +1,15 @@
 from Src.Core.abstract_manager import abstract_manager
+from datetime import date
 from Src.Core.validator import validator, operation_exception
 from Src.Logics.settings_manager import settings_manager
+from Src.Logics.storage_repository import storage_repository
 from Src.Models.range_model import range_model
 from Src.Models.group_model import group_model
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.storage_model import storage_model
 from Src.Models.receipt_model import receipt_model
 from Src.Models.receipt_item_model import receipt_item_model
+from Src.Models.transaction_model import transaction_model
 
 """
 Менеджер хранилища (singleton). Хранит склады, единицы измерения, группы,
@@ -21,6 +24,8 @@ class storage_manager(abstract_manager):
     receipt_key: str = "receipt"
 
     __data: dict = None
+    __repository: storage_repository = None
+    __transactions: tuple = ()
     __is_loaded: bool = False
 
     """Singleton. При первом старте формируются первичные данные"""
@@ -41,6 +46,8 @@ class storage_manager(abstract_manager):
 
         if not settings_manager().settings.first_start:
             self.__data = {key: [] for key in (self.range_key, self.group_key, self.nomenclature_key, self.storage_key, self.receipt_key)}
+            self.__repository = storage_repository()
+            self.__transactions = ()
             self.__is_loaded = False
             return
 
@@ -92,13 +99,26 @@ class storage_manager(abstract_manager):
         ):
             receipt.add_step(step)
 
-        self.__data = {
+        data = {
             self.range_key: [gram, kilogram, piece],
             self.group_key: [raw, packaging],
             self.nomenclature_key: [flour, cottage_cheese, sugar, egg, oil, container],
             self.storage_key: [storage],
             self.receipt_key: [dough, receipt],
         }
+        transactions = (
+            transaction_model.create(flour, storage, kilogram, 1, date(2026, 1, 1)),
+            transaction_model.create(flour, storage, kilogram, 2, date(2026, 1, 2)),
+            transaction_model.create(flour, storage, gram, -500, date(2026, 1, 3)),
+            transaction_model.create(flour, storage, kilogram, 9, date(2026, 1, 4)),
+        )
+        repository = storage_repository()
+        for items in data.values():
+            repository.registry_range(items)
+        repository.registry_range(list(transactions))
+        self.__data = data
+        self.__repository = repository
+        self.__transactions = transactions
         return True
 
     """
@@ -120,10 +140,21 @@ class storage_manager(abstract_manager):
     Модель справочника key с уникальным кодом unique_code
     """
     def find(self, key: str, unique_code: str):
-        for item in self.get(key):
-            if item.unique_code == unique_code:
-                return item
+        items = self.get(key)
+        model = self.repository.get(unique_code)
+        if model in items:
+            return model
         raise operation_exception(f"Не найдена модель {key} с кодом {unique_code}")
+
+    @property
+    def repository(self) -> storage_repository:
+        """Индекс доменных объектов и счётчиков связей."""
+        return self.__repository
+
+    @property
+    def transactions(self) -> tuple:
+        """Движения для построения оборотно-сальдовой ведомости."""
+        return self.__transactions
 
     """
     Данные хранилища: ключ справочника -> список моделей

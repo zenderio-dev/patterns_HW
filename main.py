@@ -132,6 +132,17 @@ def delete_entity(entity: str, code: str):
     return None, 204
 
 
+"""Вернуть модели справочника по DTO фильтрации."""
+def filter_entities(entity: str, body: dict):
+    models = run_entity_operation(entity_service(storage_manager()).filter, entity, body)
+    return [entity_data(model) for model in models]
+
+
+"""Вернуть ОСВ по фильтру и необязательному периоду."""
+def get_turnover(body: dict):
+    return run_entity_operation(entity_service(storage_manager()).turnover, body)
+
+
 """Разрешить обработчики OpenAPI при импорте и запуске main.py."""
 def resolve_operation(operation: str):
     return get_list if operation == "list_entities" else globals()[operation]

@@ -1,12 +1,12 @@
-# UML-диаграммы менеджеров
+# UML-диаграммы проекта
 
 Оба менеджера — singleton: сколько раз ни вызывай конструктор, объект будет один.
 И оба кэшируют данные: загрузили один раз — дальше отдают из памяти, пока не попросят `load(force=True)`.
-На диаграммах показано только то, чем менеджеры пользуются снаружи — без приватных полей.
+Диаграммы показывают публичные методы, свойства и связи классов.
 
 ## settings_manager
 
-Читает `settings.json` и собирает из него настройки с организацией внутри.
+Читает `settings.json` и передаёт плоский словарь в `deserializer`. Тот восстанавливает настройки и карточку организации из полей с префиксом `company_`.
 
 ```mermaid
 classDiagram
@@ -44,6 +44,7 @@ classDiagram
     }
 
     abstract_manager <|-- settings_manager : наследует
+    settings_manager ..> deserializer : передаёт исходные данные
     settings_manager --> settings_model : хранит настройки
     settings_model --> company_model : организация
 
@@ -52,7 +53,7 @@ classDiagram
 
 ## storage_manager
 
-Хранит справочники и техкарты. Если в настройках включён `first_start`, при первом обращении сам заполняется данными [рецепта](Recipe.md) — через фабричные методы моделей.
+Хранит справочники, техкарты и складские движения. Если включён `first_start`, менеджер создаёт начальные данные [рецепта](Recipe.md) и учебные движения для ОСВ. Репозиторий индексирует объекты по коду и считает входящие ссылки, включая ссылки из строк рецептов и складских движений. `entity_service` использует репозиторий при создании, изменении и удалении моделей. Удаление используемого объекта и смена его кода возвращают HTTP 409.
 
 ```mermaid
 classDiagram
@@ -72,7 +73,20 @@ classDiagram
         +find(key, unique_code)
         +keys()
         +data
+        +repository
+        +transactions
         +is_loaded
+    }
+
+    class storage_repository {
+        +data
+        +counts
+        +registry(source)
+        +registry_range(items)
+        +get(code)
+        +can_delete(source)
+        +delete(source)
+        +replace(source, replacement)
     }
 
     class range_model {
@@ -109,6 +123,8 @@ classDiagram
 
     abstract_manager <|-- storage_manager : наследует
     storage_manager ..> settings_manager : проверяет first_start
+    storage_manager *-- storage_repository : индекс и счётчики
+    storage_manager o-- transaction_model : складские движения
     storage_manager o-- range_model : единицы измерения
     storage_manager o-- group_model : группы
     storage_manager o-- nomenclature_model : номенклатура
@@ -118,7 +134,7 @@ classDiagram
     nomenclature_model --> range_model : измеряется в
     range_model --> range_model : базовая единица
 
-    note for storage_manager "При создании сам вызывает load().<br>Если first_start — фабриками создаёт грамм, кг, штуку,<br>группы «Сырьё» и «Упаковка», склад, номенклатуру<br>и техкарты «Творожное тесто» и «Сырники»,<br>иначе справочники пустые.<br>Дальше данные берутся из кэша"
+    note for storage_manager "При создании вызывает load().<br>Если first_start включён, создаёт справочники,<br>техкарты и движения для ОСВ.<br>При load(force=True) данные и индекс создаются заново."
     note for range_model "кг: value = 1000, base = грамм<br>грамм и штука: value = 1, base нет"
 ```
 
@@ -220,7 +236,7 @@ classDiagram
     abstract_convertor <|-- reference_convertor : наследует
     abstract_convert_factory <|-- convert_factory : наследует
     convert_factory o-- basic_convertor : int, float, str, None
-    convert_factory o-- datetime_convertor : datetime
+    convert_factory o-- datetime_convertor : date и datetime
     convert_factory o-- reference_convertor : модель, list, tuple, dict
     reference_convertor --> abstract_convert_factory : подбор конвертера для полей
 
@@ -229,9 +245,10 @@ classDiagram
 
 ## Десериализация
 
-`deserializer.load(file_name)` читает JSON-файл, а `deserialize(source)`
-восстанавливает отдельную модель или словарь коллекций. Каждый объект содержит
-`model_type`, поэтому его тип не зависит от названия коллекции или поля.
+`deserializer.load(file_name)` читает JSON-файл, а `deserialize(source, references)`
+восстанавливает отдельную модель, словарь коллекций или плоские настройки.
+В выгрузках тип каждой модели задан полем `model_type`. При записи через API
+объект вида `{"unique_code": "код"}` разрешается по индексу существующих моделей.
 Загрузчик рекурсивно восстанавливает вложенные объекты; повторяющийся
 `unique_code` возвращает тот же загруженный экземпляр.
 
@@ -241,8 +258,8 @@ classDiagram
 свои фабричные методы и сеттеры. Брутто и нетто рассчитываются по составу,
 значения этих полей из JSON не присваиваются.
 
-Пример выгрузки: [Json/storage.json](Json/storage.json). Его можно получить
-через `GET /api/json`; старые выгрузки без `model_type` нужно сформировать заново.
+Пример [Json/storage.json](Json/storage.json) показывает пять справочников из
+`GET /api/json`. Складские движения хранятся в `storage_manager.transactions`.
 
 ```mermaid
 classDiagram
@@ -260,7 +277,7 @@ classDiagram
     class deserializer {
         +factory
         +load(file_name)
-        +deserialize(source)
+        +deserialize(source, references)
     }
 
     class abstract_model {
@@ -298,3 +315,104 @@ classDiagram
     note for model_factory "загружает модули Src/Models<br>находит классы с from_dict через рефлексию<br>выбирает класс по model_type"
     note for receipt_model "модели восстанавливаются через from_dict<br>поля проверяются самой моделью"
 ```
+
+## Фильтрация и ОСВ
+
+`entity_service` создаёт прототип из данных хранилища. Вызов `clone(condition)`
+возвращает другой прототип с отобранным набором. К нему можно применить следующий
+фильтр. Для ОСВ `turnover_prototype` использует тот же механизм отбора и
+рассчитывает ведомость из складских движений.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class abstract_prototype {
+        <<abstract>>
+        +clone(condition)
+    }
+    class filter_prototype {
+        +data
+        +clone(condition)
+    }
+    class turnover_prototype {
+        +clone(condition)
+        +build()
+    }
+    class filter_dto {
+        +field
+        +operation
+        +value
+        +date_from
+        +date_to
+        +from_dict(source)$
+    }
+    class filter_type_enum {
+        <<enumeration>>
+        EQUALS
+        LIKE
+    }
+    class transaction_model {
+        +nomenclature
+        +storage
+        +range
+        +value
+        +date
+        +base_unit()
+        +base_value()
+    }
+
+    abstract_prototype <|-- filter_prototype
+    filter_prototype <|-- turnover_prototype
+    filter_prototype ..> filter_dto : условие отбора
+    filter_dto --> filter_type_enum : операция
+    entity_service ..> storage_manager : читает данные
+    entity_service ..> filter_prototype : фильтрует справочник
+    entity_service ..> turnover_prototype : формирует ОСВ
+    turnover_prototype ..> transaction_model : суммирует движения
+    transaction_model --> storage_model : склад
+    transaction_model --> nomenclature_model : номенклатура
+    transaction_model --> range_model : единица измерения
+```
+
+### Фильтр справочника
+
+`POST /api/filter/{entity}` принимает `nomenclature`, `group`, `range` или
+`receipt` в маршруте и условие в JSON. `field` указывает на `name` или
+`unique_code`, в том числе по пути через связанные модели и списки, например
+`items.nomenclature.group.name`. `EQUALS` проверяет точное совпадение с учётом
+регистра и применяется по умолчанию. `LIKE` ищет подстроку без учёта регистра.
+Пустой объект возвращает весь справочник, при отсутствии совпадений API возвращает `[]`.
+
+Запрос `POST /api/filter/range` ниже возвращает килограмм, у которого базовая
+единица называется «грамм».
+
+```json
+{"field": "base.name", "operation": "EQUALS", "value": "грамм"}
+```
+
+### Оборотно-сальдовая ведомость
+
+`POST /api/turnover` принимает тот же фильтр и необязательные границы периода
+`date_from` и `date_to`. Движения до начала периода формируют начальный
+остаток. Внутри периода границы включены, а движения после окончания
+игнорируются. Без начальной даты `opening` равен нулю. Без конечной даты
+верхней границы нет.
+
+Строки ведомости сгруппированы по складу и номенклатуре. Количества приведены
+к базовой единице. `expense` показывает величину расхода, а
+`closing = opening + income - expense`.
+
+```json
+{
+  "field": "nomenclature.name",
+  "operation": "EQUALS",
+  "value": "Пшеничная мука",
+  "date_from": "2026-01-02",
+  "date_to": "2026-01-03"
+}
+```
+
+На учебных данных этот запрос возвращает начальный остаток 1000 г, приход
+2000 г, расход 500 г и конечный остаток 2500 г. Спецификация обоих маршрутов
+находится в [openapi.yaml](../openapi.yaml).
