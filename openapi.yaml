@@ -3,6 +3,59 @@ info:
   title: Patterns HW API
   version: 1.0.0
 paths:
+  /api/filter/{entity}:
+    parameters:
+      - name: entity
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [nomenclature, group, range, receipt]
+    post:
+      operationId: filter_entities
+      summary: Отобрать доменные модели
+      requestBody:
+        $ref: '#/components/requestBodies/Filter'
+      responses:
+        '200':
+          description: Найденные модели
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: object}
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/turnover:
+    post:
+      operationId: get_turnover
+      summary: ОСВ с отбором по связанным моделям и периоду
+      requestBody:
+        $ref: '#/components/requestBodies/Filter'
+      responses:
+        '200':
+          description: Остатки и обороты по складу и номенклатуре в базовых единицах
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    storage_code: {type: string}
+                    storage_name: {type: string}
+                    nomenclature_code: {type: string}
+                    nomenclature_name: {type: string}
+                    range_code: {type: string}
+                    range_name: {type: string}
+                    opening: {type: number}
+                    income: {type: number}
+                    expense: {type: number}
+                    closing: {type: number}
+        '400':
+          $ref: '#/components/responses/Error400'
   /api/report/{format}/{entity}/{code}:
     parameters:
       - $ref: '#/components/parameters/format'
@@ -123,6 +176,29 @@ paths:
         '409':
           $ref: '#/components/responses/Error409'
 components:
+  schemas:
+    Filter:
+      type: object
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+          description: Путь к name или unique_code, например base.name или nomenclature.group.name
+        operation:
+          type: string
+          enum: [EQUALS, LIKE]
+          default: EQUALS
+          description: EQUALS учитывает регистр, LIKE ищет подстроку без учёта регистра
+        value:
+          type: string
+        date_from:
+          type: string
+          format: date
+          description: Начало периода ОСВ, предыдущие движения входят в начальный остаток
+        date_to:
+          type: string
+          format: date
+          description: Окончание периода ОСВ включительно
   parameters:
     entity:
       name: entity
@@ -143,6 +219,28 @@ components:
       schema:
         type: string
   requestBodies:
+    Filter:
+      required: true
+      description: Пустой объект возвращает весь набор. Период применяется к ОСВ.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Filter'
+          examples:
+            name:
+              summary: Поиск по имени
+              value: {field: name, operation: LIKE, value: мука}
+            nested:
+              summary: Поиск по базовой единице
+              value: {field: base.name, operation: EQUALS, value: грамм}
+            turnover:
+              summary: ОСВ по номенклатуре за период
+              value:
+                field: nomenclature.name
+                operation: LIKE
+                value: мука
+                date_from: '2026-01-02'
+                date_to: '2026-01-03'
     EntityData:
       required: true
       description: Поля модели. Ссылки передаются объектом с unique_code. При создании код можно пропустить.
