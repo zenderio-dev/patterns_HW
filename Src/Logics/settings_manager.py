@@ -1,9 +1,7 @@
 from Src.Core.abstract_manager import abstract_manager
-from Src.Core.validator import validator, operation_exception
-import json
+from Src.Core.validator import validator, argument_exception
+from Src.Logics.deserializer import deserializer
 from Src.Models.settings_model import settings_model
-from Src.Models.company_model import company_model
-from Src.Dtos.report_type_enum import report_type_enum
 
 """
 Менеджер настроек (singleton). Загружает настройки приложения из JSON-файла
@@ -32,11 +30,7 @@ class settings_manager(abstract_manager):
         if self.__is_loaded and self._file_name == inner_file_name and not force:
             return
 
-        try:
-            with open(inner_file_name, "r", encoding="utf-8") as file:
-                self.__data = json.load(file)
-        except Exception as ex:
-            raise operation_exception(f"Ошибка при загрузке файла: {inner_file_name}. Детали:{ex}")
+        self.__data = deserializer.read_json(inner_file_name)
 
         self.__is_loaded = self.convert()
         self._file_name = inner_file_name
@@ -48,26 +42,13 @@ class settings_manager(abstract_manager):
     Если данные некорректны - используются настройки по умолчанию
     """
     def convert(self) -> bool:
-        settings = settings_model()
         try:
-            company = company_model()
-            for field in ("name", "inn", "bic", "corr_account", "account", "ownership"):
-                key = f"company_{field}"
-                if key in self.__data:
-                    setattr(company, field, self.__data[key])
-            settings.company = company
-
-            for field in ("boss_name", "account_name", "first_start"):
-                if field in self.__data:
-                    setattr(settings, field, self.__data[field])
-
-            if "response_format" in self.__data:
-                settings.response_format = report_type_enum[self.__data["response_format"].upper()]
-        except Exception:
+            self.__settings = deserializer().deserialize(self.__data)
+            validator.validate(self.__settings, settings_model)
+        except argument_exception:
             self.__settings = settings_model()
             return False
 
-        self.__settings = settings
         return True
 
     """

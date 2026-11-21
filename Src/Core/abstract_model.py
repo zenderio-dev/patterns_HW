@@ -42,3 +42,12 @@ class abstract_model(ABC):
     """
     def __hash__(self) -> int:
         return hash(self.unique_code)
+
+    """Связанные модели и вложенные части сущности."""
+    def references(self) -> tuple:
+        return ()
+
+    """Применить проверенное состояние, сохранив ссылки на объект."""
+    def replace_state(self, source: 'abstract_model') -> None:
+        validator.validate(source, type(self))
+        self.__dict__ = vars(source).copy()

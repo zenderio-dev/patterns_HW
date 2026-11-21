@@ -10,6 +10,10 @@ class nomenclature_model(entity_model):
     __group: group_model = None
     __range: range_model = None
 
+    """Группа и единица измерения номенклатуры."""
+    def references(self) -> tuple:
+        return self.group, self.range
+
     """
     Восстановить номенклатуру с готовыми группой и единицей измерения
     """

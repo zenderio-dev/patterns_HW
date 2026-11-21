@@ -2,12 +2,15 @@ import io
 import json
 import flask
 import connexion
+from connexion.exceptions import ProblemException
+from connexion.resolver import Resolver
 from Src.Core.abstract_report import abstract_report
-from Src.Core.validator import argument_exception, operation_exception
+from Src.Core.validator import argument_exception, operation_exception, conflict_exception
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_manager import storage_manager
 from Src.Logics.report_factory import report_factory
 from Src.Logics.convert_factory import convert_factory
+from Src.Logics.entity_service import entity_service
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 api.app.json.ensure_ascii = False
@@ -29,7 +32,6 @@ def build_response(report: abstract_report, entity: str, code: str):
 """
 Отчет в указанном формате для указанного типа и кода сущности
 """
-@api.route("/api/report/<format>/<entity>/<code>", methods=["GET"])
 def get_report(format: str, entity: str, code: str):
     try:
         report = report_factory(settings_manager().settings).create_by_name(format)
@@ -40,7 +42,6 @@ def get_report(format: str, entity: str, code: str):
 """
 Отчет в формате из настроек (create_default) для указанного типа и кода сущности
 """
-@api.route("/api/report/<entity>/<code>", methods=["GET"])
 def get_default_report(entity: str, code: str):
     report = report_factory(settings_manager().settings).create_default()
     return build_response(report, entity, code)
@@ -48,7 +49,6 @@ def get_default_report(entity: str, code: str):
 """
 Список сущностей указанного типа: код и наименование
 """
-@api.route("/api/list/<entity>", methods=["GET"])
 def get_list(entity: str):
     try:
         items = storage_manager().get(entity)
@@ -59,14 +59,12 @@ def get_list(entity: str):
 """
 Список форматов отчетов
 """
-@api.route("/api/formats", methods=["GET"])
 def get_formats():
     return flask.jsonify(report_factory(settings_manager().settings).formats())
 
 """
 Список типов сущностей
 """
-@api.route("/api/entities", methods=["GET"])
 def get_entities():
     return flask.jsonify(storage_manager().keys())
 
@@ -82,20 +80,64 @@ def build_json(source: dict, name: str):
 """
 Все данные хранилища в одном JSON-файле
 """
-@api.route("/api/json", methods=["GET"])
 def get_json_all():
     return build_json(storage_manager().data, "storage")
 
 """
 Все сущности указанного типа в формате JSON (файл для скачивания)
 """
-@api.route("/api/json/<entity>", methods=["GET"])
 def get_json(entity: str):
     try:
         items = storage_manager().get(entity)
     except operation_exception as ex:
         flask.abort(404, str(ex))
     return build_json({entity: items}, entity)
+
+
+"""Вызвать операцию и преобразовать доменные ошибки в HTTP-ответ."""
+def run_entity_operation(operation, *args):
+    try:
+        return operation(*args)
+    except conflict_exception as ex:
+        raise ProblemException(status=409, title="Конфликт", detail=str(ex)) from ex
+    except argument_exception as ex:
+        raise ProblemException(status=400, title="Некорректные данные", detail=str(ex)) from ex
+    except operation_exception as ex:
+        raise ProblemException(status=404, title="Сущность не найдена", detail=str(ex)) from ex
+
+
+"""Преобразовать модель в JSON через фабрику конвертеров."""
+def entity_data(model):
+    return convert_factory().create(model).convert(model)
+
+
+"""Получить сущность по коду."""
+def get_entity(entity: str, code: str):
+    return entity_data(run_entity_operation(storage_manager().find, entity, code))
+
+
+"""Создать сущность."""
+def create_entity(entity: str, body: dict):
+    return entity_data(run_entity_operation(entity_service(storage_manager()).create, entity, body)), 201
+
+
+"""Изменить переданные поля сущности."""
+def update_entity(entity: str, code: str, body: dict):
+    return entity_data(run_entity_operation(entity_service(storage_manager()).update, entity, code, body))
+
+
+"""Удалить сущность по коду."""
+def delete_entity(entity: str, code: str):
+    run_entity_operation(entity_service(storage_manager()).delete, entity, code)
+    return None, 204
+
+
+"""Разрешить обработчики OpenAPI при импорте и запуске main.py."""
+def resolve_operation(operation: str):
+    return get_list if operation == "list_entities" else globals()[operation]
+
+
+api.add_api("openapi.yaml", resolver=Resolver(resolve_operation))
 
 if __name__ == "__main__":
     api.run(host="0.0.0.0", port=8080)
