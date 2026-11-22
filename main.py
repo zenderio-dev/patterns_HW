@@ -1,16 +1,21 @@
 import io
 import json
+from dataclasses import asdict
+from decimal import Decimal
 import flask
 import connexion
 from connexion.exceptions import ProblemException
 from connexion.resolver import Resolver
 from Src.Core.abstract_report import abstract_report
 from Src.Core.validator import argument_exception, operation_exception, conflict_exception
+from Src.Dtos.filter_dto import filter_dto
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_manager import storage_manager
 from Src.Logics.report_factory import report_factory
 from Src.Logics.convert_factory import convert_factory
 from Src.Logics.entity_service import entity_service
+from Src.Logics.deserializer import deserializer
+from Src.Logics.turnover_service import turnover_service
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 api.app.json.ensure_ascii = False
@@ -134,13 +139,22 @@ def delete_entity(entity: str, code: str):
 
 """Вернуть модели справочника по DTO фильтрации."""
 def filter_entities(entity: str, body: dict):
-    models = run_entity_operation(entity_service(storage_manager()).filter, entity, body)
+    condition = read_filter(body)
+    models = run_entity_operation(entity_service(storage_manager()).filter, entity, condition)
     return [entity_data(model) for model in models]
 
 
 """Вернуть ОСВ по фильтру и необязательному периоду."""
 def get_turnover(body: dict):
-    return run_entity_operation(entity_service(storage_manager()).turnover, body)
+    condition = read_filter(body)
+    rows = run_entity_operation(turnover_service(storage_manager()).build, condition)
+    return [entity_data({key: float(value) if isinstance(value, Decimal) else value
+                         for key, value in asdict(row).items()}) for row in rows]
+
+
+"""Восстановить DTO из тела запроса через общий десериализатор."""
+def read_filter(body: dict) -> filter_dto:
+    return run_entity_operation(lambda: deserializer().deserialize(body, dto_type=filter_dto))
 
 
 """Разрешить обработчики OpenAPI при импорте и запуске main.py."""

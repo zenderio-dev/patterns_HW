@@ -1,4 +1,5 @@
 from copy import copy
+from datetime import date
 
 from Src.Core.abstract_prototype import abstract_prototype
 from Src.Core.common import common
@@ -23,14 +24,39 @@ class filter_prototype(abstract_prototype):
     def clone(self, condition: filter_dto) -> 'filter_prototype':
         """Склонировать прототип и применить условие к его набору."""
         validator.validate(condition, filter_dto)
+        validator.validate(condition.operation, filter_type_enum)
         result = copy(self)
-        if condition.field is not None:
-            result.__data = tuple(item for item in self.data if self.__matches(item, condition))
+        if condition.field is None:
+            if condition.value is not None:
+                raise argument_exception("field", "Для значения нужно указать поле")
+            return result
+        validator.validate(condition.field, str)
+        if not isinstance(condition.value, str):
+            raise argument_exception("value", "Значение фильтра должно быть строкой")
+        path = condition.field.split(".")
+        if path[-1] not in ("name", "unique_code") or any(
+            not part.isidentifier() or part.startswith("_") for part in path
+        ):
+            raise argument_exception("field", "Допустим путь к name или unique_code")
+        result.__data = tuple(item for item in self.data if self.__matches(item, condition, path))
         return result
 
-    def __matches(self, item, condition: filter_dto) -> bool:
+    def clone_period(self, start: date = None, end: date = None, *,
+                     include_end: bool = True) -> 'filter_prototype':
+        """Отобрать движения по датам с включаемой или исключаемой верхней границей."""
+        if any(bound is not None and type(bound) is not date for bound in (start, end)):
+            raise argument_exception("period", "Граница периода должна быть датой")
+        if start is not None and end is not None and start > end:
+            raise argument_exception("period", "Начало периода позже окончания")
+        result = copy(self)
+        result.__data = tuple(item for item in self.data
+                              if (start is None or item.date >= start)
+                              and (end is None or item.date < end or (include_end and item.date == end)))
+        return result
+
+    def __matches(self, item, condition: filter_dto, path: list) -> bool:
         """Проверить наличие хотя бы одного подходящего значения по пути."""
-        values = self.__values(item, condition.field.split("."))
+        values = self.__values(item, path)
         if condition.operation == filter_type_enum.EQUALS:
             return any(value == condition.value for value in values)
         return any(condition.value.casefold() in value.casefold() for value in values)

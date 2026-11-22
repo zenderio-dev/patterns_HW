@@ -320,8 +320,10 @@ classDiagram
 
 `entity_service` создаёт прототип из данных хранилища. Вызов `clone(condition)`
 возвращает другой прототип с отобранным набором. К нему можно применить следующий
-фильтр. Для ОСВ `turnover_prototype` использует тот же механизм отбора и
-рассчитывает ведомость из складских движений.
+фильтр. API восстанавливает `filter_dto` через общий десериализатор.
+Для ОСВ `turnover_service` получает движения из хранилища и через
+`filter_prototype` делает две выборки. Сервис считает начальные остатки
+и обороты отдельно и объединяет суммы в строки `turnover_row_dto`.
 
 ```mermaid
 classDiagram
@@ -334,10 +336,19 @@ classDiagram
     class filter_prototype {
         +data
         +clone(condition)
+        +clone_period(start, end, include_end)
     }
-    class turnover_prototype {
-        +clone(condition)
-        +build()
+    class turnover_service {
+        +build(condition)
+    }
+    class turnover_row_dto {
+        +storage_code
+        +nomenclature_code
+        +range_code
+        +opening
+        +income
+        +expense
+        +closing
     }
     class filter_dto {
         +field
@@ -345,7 +356,6 @@ classDiagram
         +value
         +date_from
         +date_to
-        +from_dict(source)$
     }
     class filter_type_enum {
         <<enumeration>>
@@ -363,13 +373,15 @@ classDiagram
     }
 
     abstract_prototype <|-- filter_prototype
-    filter_prototype <|-- turnover_prototype
+    deserializer ..> filter_dto : восстанавливает параметры
     filter_prototype ..> filter_dto : условие отбора
     filter_dto --> filter_type_enum : операция
     entity_service ..> storage_manager : читает данные
     entity_service ..> filter_prototype : фильтрует справочник
-    entity_service ..> turnover_prototype : формирует ОСВ
-    turnover_prototype ..> transaction_model : суммирует движения
+    turnover_service ..> storage_manager : получает движения
+    turnover_service ..> filter_prototype : отбирает движения по датам
+    turnover_service ..> transaction_model : суммирует движения
+    turnover_service ..> turnover_row_dto : формирует строки
     transaction_model --> storage_model : склад
     transaction_model --> nomenclature_model : номенклатура
     transaction_model --> range_model : единица измерения

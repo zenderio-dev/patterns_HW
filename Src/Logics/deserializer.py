@@ -1,8 +1,11 @@
 import json
+from datetime import date
 from uuid import uuid4
 from Src.Core.abstract_model import abstract_model
 from Src.Core.abstract_model_factory import abstract_model_factory
 from Src.Core.validator import validator, argument_exception, operation_exception
+from Src.Dtos.filter_dto import filter_dto
+from Src.Dtos.filter_type_enum import filter_type_enum
 from Src.Logics.model_factory import model_factory
 from Src.Models.settings_model import settings_model
 
@@ -44,10 +47,14 @@ class deserializer:
             raise operation_exception(f"Не удалось прочитать JSON: {file_name}. {ex}") from ex
 
     """
-    Восстановить модель, плоские настройки или словарь коллекций моделей
+    Восстановить DTO запроса, модель, настройки или словарь коллекций
     """
-    def deserialize(self, source: dict, references: dict = None):
+    def deserialize(self, source: dict, references: dict = None, *, dto_type=None):
         validator.validate(source, dict)
+        if dto_type is filter_dto:
+            return self.__restore_filter(source)
+        if dto_type is not None:
+            raise argument_exception("dto_type", "Неизвестный тип DTO")
         models = {}
         active = set()
         if "model_type" in source:
@@ -60,6 +67,25 @@ class deserializer:
             validator.validate(items, list)
             result[key] = [self.__restore(item, models, active, references) for item in items]
         return result
+
+    @staticmethod
+    def __restore_filter(source: dict) -> filter_dto:
+        """Восстановить перечисление и даты из параметров запроса."""
+        if source.keys() - {"field", "operation", "value", "date_from", "date_to"}:
+            raise argument_exception("source", "Неизвестное поле фильтра")
+        try:
+            operation = filter_type_enum(source.get("operation", "EQUALS"))
+            dates = {}
+            for field in ("date_from", "date_to"):
+                value = source.get(field)
+                if value is not None:
+                    validator.validate(value, str)
+                    dates[field] = date.fromisoformat(value)
+        except (ValueError, TypeError) as ex:
+            raise argument_exception("source", "Некорректная операция или дата") from ex
+        if len(dates) == 2 and dates["date_from"] > dates["date_to"]:
+            raise argument_exception("period", "Начало периода позже окончания")
+        return filter_dto(source.get("field"), operation, source.get("value"), **dates)
 
     """
     Восстановить вложенные поля и передать создание модели фабрике

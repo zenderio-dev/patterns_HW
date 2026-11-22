@@ -5,7 +5,6 @@ from Src.Core.common import common
 from Src.Core.validator import validator, argument_exception, operation_exception
 from Src.Dtos.filter_dto import filter_dto
 from Src.Logics.filter_prototype import filter_prototype
-from Src.Logics.turnover_prototype import turnover_prototype
 from Src.Logics.deserializer import deserializer
 from Src.Logics.storage_manager import storage_manager
 from Src.Models.group_model import group_model
@@ -32,18 +31,12 @@ class entity_service:
     def __init__(self, storage: storage_manager):
         self.__storage = storage
 
-    def filter(self, key: str, source: dict) -> tuple:
+    def filter(self, key: str, condition: filter_dto) -> tuple:
         """Отобрать модели справочника через общий прототип."""
         if key not in (self.__storage.nomenclature_key, self.__storage.group_key,
                        self.__storage.range_key, self.__storage.receipt_key):
             raise operation_exception(f"Неизвестный тип фильтрации: {key}")
-        condition = filter_dto.from_dict(source)
         return filter_prototype(self.__storage.get(key)).clone(condition).data
-
-    def turnover(self, source: dict) -> list:
-        """Сформировать ОСВ через прототип движения и периода."""
-        condition = filter_dto.from_dict(source)
-        return turnover_prototype(self.__storage.transactions).clone(condition).build()
 
     """Добавить проверенную сущность в справочник."""
     def create(self, key: str, source: dict) -> abstract_model:
