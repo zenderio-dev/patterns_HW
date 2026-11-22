@@ -5,6 +5,7 @@ from decimal import Decimal
 from Src.Core.validator import argument_exception
 from Src.Dtos.filter_dto import filter_dto
 from Src.Dtos.filter_type_enum import filter_type_enum
+from Src.Logics.deserializer import deserializer
 from Src.Logics.filter_prototype import filter_prototype
 from Src.Models.group_model import group_model
 from Src.Models.nomenclature_model import nomenclature_model
@@ -94,9 +95,10 @@ def test_equals_filter_prototype_clone_nested(models):
     {"field": "name"},
     {"unknown": "x"},
 ])
-def test_raise_filter_dto_from_dict_invalid(source):
+def test_raise_filter_prototype_invalid_condition(source):
     with pytest.raises(argument_exception):
-        filter_dto.from_dict(source)
+        condition = deserializer().deserialize(source, dto_type=filter_dto)
+        filter_prototype([group_model.create("Сырьё")]).clone(condition)
 
 
 """
@@ -105,8 +107,10 @@ def test_raise_filter_dto_from_dict_invalid(source):
 и пересчёт единиц. Движение после периода не влияет на результат.
 </summary>
 """
-def test_equals_turnover_prototype_build_period(models):
-    from Src.Logics.turnover_prototype import turnover_prototype
+def test_equals_turnover_service_build_period(models):
+    from types import SimpleNamespace
+    from Src.Dtos.turnover_row_dto import turnover_row_dto
+    from Src.Logics.turnover_service import turnover_service
     from Src.Models.storage_model import storage_model
     from Src.Models.transaction_model import transaction_model
 
@@ -117,23 +121,25 @@ def test_equals_turnover_prototype_build_period(models):
         transaction_model.create(flour, warehouse, kilogram, 2, date(2026, 1, 2)),
         transaction_model.create(flour, warehouse, gram, -500, date(2026, 1, 3)),
         transaction_model.create(flour, warehouse, kilogram, 9, date(2026, 1, 4)),
+        transaction_model.create(nomenclature_model.create("Сахар", group, kilogram),
+                                 warehouse, kilogram, 3, date(2026, 1, 1)),
+        transaction_model.create(nomenclature_model.create("Сахар", group, kilogram),
+                                 warehouse, kilogram, 4, date(2026, 1, 2)),
     ]
-    original = turnover_prototype(transactions)
-    selected = original.clone(filter_dto.from_dict({
+    service = turnover_service(SimpleNamespace(transactions=tuple(transactions)))
+    condition = deserializer().deserialize({
         "field": "nomenclature.name", "operation": "EQUALS", "value": "Мука",
         "date_from": "2026-01-02", "date_to": "2026-01-03",
-    }))
-    rows = selected.build()
+    }, dto_type=filter_dto)
+    row, = service.build(condition)
 
-    assert isinstance(selected, turnover_prototype)
-    assert len(original.data) == 4
-    assert len(rows) == 1
-    assert rows[0]["opening"] == 1000
-    assert rows[0]["income"] == 2000
-    assert rows[0]["expense"] == 500
-    assert rows[0]["closing"] == 2500
-    assert rows[0]["range_code"] == gram.unique_code
-    assert selected.clone(filter_dto("storage.unique_code", filter_type_enum.EQUALS, "missing")).build() == []
+    assert isinstance(row, turnover_row_dto)
+    assert row.opening == 1000
+    assert row.income == 2000
+    assert row.expense == 500
+    assert row.closing == 2500
+    assert row.range_code == gram.unique_code
+    assert service.build(filter_dto("storage.unique_code", filter_type_enum.EQUALS, "missing")) == []
     assert transactions[1].base_value() == Decimal("2000")
 
 
@@ -147,9 +153,19 @@ def test_equals_turnover_prototype_build_period(models):
     {"date_from": "2026-02-01", "date_to": "2026-01-01"},
     {"date_to": 2026},
 ])
-def test_raise_filter_dto_from_dict_invalid_period(source):
+def test_raise_deserializer_deserialize_invalid_filter_period(source):
     with pytest.raises(argument_exception):
-        filter_dto.from_dict(source)
+        deserializer().deserialize(source, dto_type=filter_dto)
+
+
+"""
+<summary>
+Прямой вызов прототипа отклоняет строковую границу периода доменным исключением.
+</summary>
+"""
+def test_raise_filter_prototype_clone_period_invalid_date():
+    with pytest.raises(argument_exception):
+        filter_prototype([]).clone_period(end="2026-01-02")
 
 
 """
@@ -186,27 +202,28 @@ def test_equals_filter_prototype_clone_receipt_items(models):
 
 """
 <summary>
-ОСВ разделяет склады, сохраняет отрицательный остаток и точно складывает дробные движения.
+ОСВ сохраняет порядок складов из движений, отрицательный остаток и точность дробных сумм.
 </summary>
 """
-def test_equals_turnover_prototype_build_warehouses(models):
-    from Src.Logics.turnover_prototype import turnover_prototype
+def test_equals_turnover_service_build_warehouses(models):
+    from types import SimpleNamespace
+    from Src.Logics.turnover_service import turnover_service
     from Src.Models.storage_model import storage_model
     from Src.Models.transaction_model import transaction_model
 
     first = storage_model.create("Первый", "Иркутск")
     second = storage_model.create("Второй", "Иркутск")
     movements = [
-        transaction_model.create(models[3], first, models[1], -50, date(2026, 1, 1)),
         transaction_model.create(models[3], second, models[1], 0.1, date(2026, 1, 2)),
+        transaction_model.create(models[3], first, models[1], -50, date(2026, 1, 1)),
         transaction_model.create(models[3], second, models[1], 0.2, date(2026, 1, 2)),
     ]
-    prototype = turnover_prototype(movements).clone(filter_dto(date_from=date(2026, 1, 2)))
-    rows = prototype.build()
-    assert [row["storage_code"] for row in rows] == [first.unique_code, second.unique_code]
-    assert rows[0]["opening"] == rows[0]["closing"] == -50
-    assert rows[1]["income"] == rows[1]["closing"] == 0.3
-    assert turnover_prototype([]).build() == []
+    condition = filter_dto(date_from=date(2026, 1, 2))
+    rows = turnover_service(SimpleNamespace(transactions=tuple(movements))).build(condition)
+    assert [row.storage_code for row in rows] == [second.unique_code, first.unique_code]
+    assert rows[0].income == rows[0].closing == Decimal("0.3")
+    assert rows[1].opening == rows[1].closing == -50
+    assert turnover_service(SimpleNamespace(transactions=())).build(filter_dto()) == []
 
 
 """
