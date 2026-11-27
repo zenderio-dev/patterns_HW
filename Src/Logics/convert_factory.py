@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from Src.Core.abstract_convert_factory import abstract_convert_factory
 from Src.Core.abstract_convertor import abstract_convertor
 from Src.Core.abstract_model import abstract_model
@@ -24,6 +24,7 @@ class convert_factory(abstract_convert_factory):
             str: basic,
             type(None): basic,
             datetime: datetime_convertor(),
+            date: datetime_convertor(),
             abstract_model: reference,
             list: reference,
             tuple: reference,
