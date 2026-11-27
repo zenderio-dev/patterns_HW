@@ -2,11 +2,14 @@ import io
 import json
 from dataclasses import asdict
 from decimal import Decimal
+from pathlib import Path
 import flask
 import connexion
 from connexion.exceptions import ProblemException
+from connexion.middleware import MiddlewarePosition
 from connexion.resolver import Resolver
 from Src.Core.abstract_report import abstract_report
+from Src.Core.event_publisher import events, log_operation
 from Src.Core.validator import argument_exception, operation_exception, conflict_exception
 from Src.Dtos.filter_dto import filter_dto
 from Src.Logics.settings_manager import settings_manager
@@ -14,11 +17,16 @@ from Src.Logics.storage_manager import storage_manager
 from Src.Logics.report_factory import report_factory
 from Src.Logics.convert_factory import convert_factory
 from Src.Logics.entity_service import entity_service
+from Src.Logics.file_log_observer import file_log_observer
 from Src.Logics.deserializer import deserializer
 from Src.Logics.turnover_service import turnover_service
+from Src.Logics.web_log_middleware import web_log_middleware
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 api.app.json.ensure_ascii = False
+log_observer = file_log_observer(Path(__file__).with_name("application.log"))
+events.subscribe(log_observer)
+api.add_middleware(web_log_middleware, position=MiddlewarePosition.BEFORE_EXCEPTION)
 settings_manager().load()
 
 """
@@ -54,6 +62,7 @@ def get_default_report(entity: str, code: str):
 """
 Список сущностей указанного типа: код и наименование
 """
+@log_operation("crud", "Список сущностей")
 def get_list(entity: str):
     try:
         items = storage_manager().get(entity)
@@ -117,6 +126,7 @@ def entity_data(model):
 
 
 """Получить сущность по коду."""
+@log_operation("crud", "Чтение сущности")
 def get_entity(entity: str, code: str):
     return entity_data(run_entity_operation(storage_manager().find, entity, code))
 

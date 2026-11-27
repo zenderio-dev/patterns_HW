@@ -1,5 +1,7 @@
 from Src.Core.abstract_manager import abstract_manager
-from Src.Core.validator import validator, argument_exception
+from Src.Core.common import common
+from Src.Core.event_publisher import events
+from Src.Core.validator import validator, argument_exception, operation_exception
 from Src.Logics.deserializer import deserializer
 from Src.Models.settings_model import settings_model
 
@@ -17,6 +19,7 @@ class settings_manager(abstract_manager):
         if not hasattr(cls, 'instance'):
             cls.instance = super(settings_manager, cls).__new__(cls)
             cls.instance.__settings = settings_model()
+            cls.instance.__settings.track_changes(True)
         return cls.instance
 
     """
@@ -30,7 +33,11 @@ class settings_manager(abstract_manager):
         if self.__is_loaded and self._file_name == inner_file_name and not force:
             return
 
-        self.__data = deserializer.read_json(inner_file_name)
+        try:
+            self.__data = deserializer.read_json(inner_file_name)
+        except operation_exception:
+            events.publish("settings", "ERROR", "Не удалось прочитать файл настроек")
+            raise
 
         self.__is_loaded = self.convert()
         self._file_name = inner_file_name
@@ -42,14 +49,34 @@ class settings_manager(abstract_manager):
     Если данные некорректны - используются настройки по умолчанию
     """
     def convert(self) -> bool:
+        previous = self.__settings
+        loaded = True
         try:
-            self.__settings = deserializer().deserialize(self.__data)
-            validator.validate(self.__settings, settings_model)
+            current = deserializer().deserialize(self.__data)
+            validator.validate(current, settings_model)
         except argument_exception:
-            self.__settings = settings_model()
-            return False
+            current = settings_model()
+            loaded = False
+            events.publish("settings", "ERROR", "Некорректные настройки")
 
-        return True
+        previous.track_changes(False)
+        current.track_changes(True)
+        self.__settings = current
+        before = self.__parameters(previous)
+        after = self.__parameters(current)
+        for field in sorted(before.keys() | after.keys()):
+            if before.get(field) != after.get(field):
+                events.publish("settings", "INFO", f"Изменён параметр: {field}")
+        return loaded
+
+    @staticmethod
+    def __parameters(settings: settings_model) -> dict:
+        """Получить значения полей настроек и организации для сравнения."""
+        result = {field: getattr(settings, field) for field in common.get_fields(settings)
+                  if field not in ("unique_code", "company")}
+        if settings.company is not None:
+            result.update(settings.company.parameters())
+        return result
 
     """
     Модель настроек
