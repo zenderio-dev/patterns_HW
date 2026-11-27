@@ -2,6 +2,7 @@ from threading import RLock
 from uuid import uuid4
 from Src.Core.abstract_model import abstract_model
 from Src.Core.common import common
+from Src.Core.event_publisher import log_operation
 from Src.Core.validator import validator, argument_exception, operation_exception
 from Src.Dtos.filter_dto import filter_dto
 from Src.Logics.filter_prototype import filter_prototype
@@ -39,6 +40,7 @@ class entity_service:
         return filter_prototype(self.__storage.get(key)).clone(condition).data
 
     """Добавить проверенную сущность в справочник."""
+    @log_operation("crud", "Создание сущности")
     def create(self, key: str, source: dict) -> abstract_model:
         with self.__lock:
             collection = self.__storage.get(key)
@@ -50,6 +52,7 @@ class entity_service:
             return model
 
     """Обновить переданные поля, сохранив объект для существующих ссылок."""
+    @log_operation("crud", "Изменение сущности")
     def update(self, key: str, unique_code: str, source: dict) -> abstract_model:
         with self.__lock:
             current = self.__storage.find(key, unique_code)
@@ -62,6 +65,7 @@ class entity_service:
             return current
 
     """Удалить сущность, если на неё нет ссылок."""
+    @log_operation("crud", "Удаление сущности")
     def delete(self, key: str, unique_code: str) -> None:
         with self.__lock:
             model = self.__storage.find(key, unique_code)

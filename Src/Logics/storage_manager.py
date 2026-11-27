@@ -1,5 +1,6 @@
 from Src.Core.abstract_manager import abstract_manager
 from datetime import date
+from Src.Core.event_publisher import events
 from Src.Core.validator import validator, operation_exception
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_repository import storage_repository
@@ -119,6 +120,11 @@ class storage_manager(abstract_manager):
         self.__data = data
         self.__repository = repository
         self.__transactions = transactions
+        for movement in transactions:
+            operation = "приход" if movement.value > 0 else "расход"
+            events.publish("storage", "INFO", f"Начальные данные, {operation}: "
+                           f"{movement.nomenclature.name}, {abs(movement.value)} "
+                           f"{movement.range.name}, {movement.storage.name}")
         return True
 
     """

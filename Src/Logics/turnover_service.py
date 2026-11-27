@@ -1,3 +1,4 @@
+from Src.Core.event_publisher import log_operation
 from Src.Dtos.filter_dto import filter_dto
 from Src.Dtos.turnover_row_dto import turnover_row_dto
 from Src.Logics.filter_prototype import filter_prototype
@@ -12,6 +13,7 @@ class turnover_service:
         """Подключить источник движений."""
         self.__storage = storage
 
+    @log_operation("storage", "Расчёт ОСВ")
     def build(self, condition: filter_dto) -> list[turnover_row_dto]:
         """Отдельно выбрать начальные движения и обороты, затем объединить суммы."""
         source = filter_prototype(self.__storage.transactions)
